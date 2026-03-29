@@ -21,7 +21,7 @@ export default function Admin({
   const [editingId, setEditingId] = useState(null);
   const [uploading, setUploading] = useState(false);
   const { confirm } = useConfirm();
-  const { analytics } = useAnalytics();
+  const { analytics, resetVisits } = useAnalytics();
 
   // Cloudinary configuration
   const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
@@ -780,6 +780,29 @@ export default function Admin({
               purchases.
             </p>
           )}
+
+          {/* Reset Analytics */}
+          <div
+            style={{
+              marginTop: 32,
+              paddingTop: 24,
+              borderTop: "1px solid #E8E6E0",
+              display: "flex",
+              gap: 12,
+              justifyContent: "center",
+            }}>
+            <button
+              className="btn-outline"
+              onClick={() => {
+                confirm("Reset visit counter to 0?", () => {
+                  resetVisits();
+                  toast.success("Visit counter reset to 0");
+                });
+              }}
+              style={{ fontSize: 14 }}>
+              Reset Visit Counter
+            </button>
+          </div>
         </div>
 
         {/* Product List */}

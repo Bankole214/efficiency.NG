@@ -1,4 +1,11 @@
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 
 const AnalyticsContext = createContext(null);
 
@@ -125,6 +132,10 @@ export function AnalyticsProvider({ children }) {
     });
   };
 
+  const resetVisits = () => {
+    setAnalytics((prev) => ({ ...prev, totalVisits: 0 }));
+  };
+
   // Calculate analytics
   const getBestSellingItem = () => {
     const items = Object.values(analytics.itemSales);
@@ -156,31 +167,34 @@ export function AnalyticsProvider({ children }) {
   };
 
   // Computed analytics for the UI
-  const computedAnalytics = {
-    totalRevenue: analytics.totalRevenue,
-    totalSales: analytics.totalOrders,
-    totalVisits: analytics.totalVisits,
-    averageOrderValue:
-      analytics.totalOrders > 0
-        ? analytics.totalRevenue / analytics.totalOrders
-        : 0,
-    bestSellingProducts: Object.entries(analytics.itemSales)
-      .map(([id, data]) => ({
-        id,
-        name: data.name,
-        category: data.category,
-        sales: data.quantity,
-        revenue: data.revenue,
-      }))
-      .sort((a, b) => b.sales - a.sales),
-    revenueByCategory: Object.entries(analytics.categorySales)
-      .map(([category, data]) => ({
-        category,
-        sales: data.quantity,
-        revenue: data.revenue,
-      }))
-      .sort((a, b) => b.revenue - a.revenue),
-  };
+  const computedAnalytics = useMemo(
+    () => ({
+      totalRevenue: analytics.totalRevenue,
+      totalSales: analytics.totalOrders,
+      totalVisits: analytics.totalVisits,
+      averageOrderValue:
+        analytics.totalOrders > 0
+          ? analytics.totalRevenue / analytics.totalOrders
+          : 0,
+      bestSellingProducts: Object.entries(analytics.itemSales)
+        .map(([id, data]) => ({
+          id,
+          name: data.name,
+          category: data.category,
+          sales: data.quantity,
+          revenue: data.revenue,
+        }))
+        .sort((a, b) => b.sales - a.sales),
+      revenueByCategory: Object.entries(analytics.categorySales)
+        .map(([category, data]) => ({
+          category,
+          sales: data.quantity,
+          revenue: data.revenue,
+        }))
+        .sort((a, b) => b.revenue - a.revenue),
+    }),
+    [analytics],
+  );
 
   return (
     <AnalyticsContext.Provider
@@ -189,6 +203,7 @@ export function AnalyticsProvider({ children }) {
         trackPurchase,
         trackVisit,
         clearAnalytics,
+        resetVisits,
         getBestSellingItem,
         getBestSellingCategory,
         getTopItems,
