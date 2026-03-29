@@ -12,6 +12,9 @@ export default function ProductCard({ product, index, onQuickView }) {
     setTimeout(() => setAdded(false), 1400);
   };
 
+  // Get first image, supporting both old (img) and new (imgs) formats
+  const mainImage = product.imgs?.[0] || product.img;
+
   return (
     <div
       className="pcard"
@@ -27,7 +30,7 @@ export default function ProductCard({ product, index, onQuickView }) {
         onClick={() => onQuickView(product)}>
         <img
           className="pcard-img"
-          src={product.img}
+          src={mainImage}
           alt={product.name}
           style={{ width: "100%", height: "100%", objectFit: "cover" }}
           onError={(e) => {

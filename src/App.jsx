@@ -1,8 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Toaster } from "react-hot-toast";
 import { useAnalytics } from "./context/AnalyticsContext";
-import { INITIAL_PRODUCTS } from "./data/products";
-import { getProductsFromFirestore, initializeProductsInFirestore } from "./services/productsService";
+import { getProductsFromFirestore } from "./services/productsService";
 import Shop from "./pages/Shop";
 import AdminLogin from "./pages/AdminLogin";
 import Admin from "./pages/Admin";
@@ -31,18 +30,17 @@ function useProducts() {
     const loadProducts = async () => {
       try {
         const firestoreProducts = await getProductsFromFirestore();
-        if (firestoreProducts.length === 0) {
-          // Initialize with default products if none exist
-          await initializeProductsInFirestore(INITIAL_PRODUCTS);
-          setProducts(INITIAL_PRODUCTS.map((p) => ({ ...p, bestSelling: p.bestSelling || false })));
-        } else {
-          // Ensure all products have bestSelling property
-          setProducts(firestoreProducts.map((p) => ({ ...p, bestSelling: p.bestSelling || false })));
-        }
+        const seedIds = new Set(["p1", "p2", "p3", "p4", "p5", "p6"]);
+
+        // Exclude the old local seed IDs if they still exist in Firestore
+        const filteredProducts = firestoreProducts
+          .filter((p) => !seedIds.has(p.id))
+          .map((p) => ({ ...p, bestSelling: p.bestSelling || false }));
+
+        setProducts(filteredProducts);
       } catch (error) {
         console.error('Error loading products:', error);
-        // Fallback to initial products
-        setProducts(INITIAL_PRODUCTS.map((p) => ({ ...p, bestSelling: p.bestSelling || false })));
+        setProducts([]); // DB not ready yet, show empty list until DB provides data
       } finally {
         setLoading(false);
       }

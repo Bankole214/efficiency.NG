@@ -2,7 +2,8 @@ import { fmt } from "../data/products";
 import { useCart } from "../context/CartContext";
 
 export default function CartDrawer({ onCheckout }) {
-  const { cart, cartCount, cartTotal, showCart, setShowCart, updateQty } = useCart();
+  const { cart, cartCount, cartTotal, showCart, setShowCart, updateQty } =
+    useCart();
 
   if (!showCart) return null;
 
@@ -31,8 +32,7 @@ export default function CartDrawer({ onCheckout }) {
           animation: "slideRight 0.3s cubic-bezier(0.22,1,0.36,1)",
           display: "flex",
           flexDirection: "column",
-        }}
-      >
+        }}>
         {/* Header */}
         <div
           style={{
@@ -41,16 +41,14 @@ export default function CartDrawer({ onCheckout }) {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-          }}
-        >
+          }}>
           <div>
             <h2
               style={{
                 fontFamily: "'Cormorant Garamond', serif",
                 fontSize: 24,
                 fontWeight: 400,
-              }}
-            >
+              }}>
               Your Cart
             </h2>
             <p style={{ fontSize: 12, color: "#888880", marginTop: 2 }}>
@@ -66,8 +64,7 @@ export default function CartDrawer({ onCheckout }) {
               cursor: "pointer",
               color: "#888880",
               lineHeight: 1,
-            }}
-          >
+            }}>
             ✕
           </button>
         </div>
@@ -75,7 +72,8 @@ export default function CartDrawer({ onCheckout }) {
         {/* Items */}
         <div style={{ flex: 1, overflowY: "auto", padding: "20px 28px" }}>
           {cart.length === 0 ? (
-            <div style={{ textAlign: "center", paddingTop: 72, color: "#888880" }}>
+            <div
+              style={{ textAlign: "center", paddingTop: 72, color: "#888880" }}>
               <svg
                 width="48"
                 height="48"
@@ -83,8 +81,7 @@ export default function CartDrawer({ onCheckout }) {
                 fill="none"
                 stroke="#D0CECC"
                 strokeWidth="1"
-                style={{ marginBottom: 16 }}
-              >
+                style={{ marginBottom: 16 }}>
                 <path d="M6 2 3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
                 <line x1="3" y1="6" x2="21" y2="6" />
                 <path d="M16 10a4 4 0 01-8 0" />
@@ -94,16 +91,14 @@ export default function CartDrawer({ onCheckout }) {
                   fontFamily: "'Cormorant Garamond', serif",
                   fontSize: 20,
                   marginBottom: 8,
-                }}
-              >
+                }}>
                 Your cart is empty
               </p>
               <p style={{ fontSize: 13 }}>Browse our collection below.</p>
               <button
                 className="btn-dark"
                 style={{ marginTop: 20 }}
-                onClick={() => setShowCart(false)}
-              >
+                onClick={() => setShowCart(false)}>
                 Browse Products
               </button>
             </div>
@@ -117,10 +112,9 @@ export default function CartDrawer({ onCheckout }) {
                   paddingBottom: 22,
                   marginBottom: 22,
                   borderBottom: "1px solid #F4F2EC",
-                }}
-              >
+                }}>
                 <img
-                  src={item.product.img}
+                  src={item.product.imgs?.[0] || item.product.img}
                   alt={item.product.name}
                   style={{
                     width: 80,
@@ -137,19 +131,38 @@ export default function CartDrawer({ onCheckout }) {
                       fontWeight: 400,
                       lineHeight: 1.2,
                       marginBottom: 4,
-                    }}
-                  >
+                    }}>
                     {item.product.name}
                   </div>
-                  <div style={{ fontSize: 12, color: "#888880", marginBottom: 12 }}>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      color: "#888880",
+                      marginBottom: 12,
+                    }}>
                     {fmt(item.product.price)} each
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <button className="qty-btn" onClick={() => updateQty(item.product.id, -1)}>−</button>
-                    <span style={{ fontSize: 14, minWidth: 20, textAlign: "center", fontWeight: 500 }}>
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <button
+                      className="qty-btn"
+                      onClick={() => updateQty(item.product.id, -1)}>
+                      −
+                    </button>
+                    <span
+                      style={{
+                        fontSize: 14,
+                        minWidth: 20,
+                        textAlign: "center",
+                        fontWeight: 500,
+                      }}>
                       {item.qty}
                     </span>
-                    <button className="qty-btn" onClick={() => updateQty(item.product.id, 1)}>+</button>
+                    <button
+                      className="qty-btn"
+                      onClick={() => updateQty(item.product.id, 1)}>
+                      +
+                    </button>
                   </div>
                 </div>
                 <span
@@ -157,8 +170,7 @@ export default function CartDrawer({ onCheckout }) {
                     fontFamily: "'Cormorant Garamond', serif",
                     fontSize: 17,
                     whiteSpace: "nowrap",
-                  }}
-                >
+                  }}>
                   {fmt(item.product.price * item.qty)}
                 </span>
               </div>
@@ -168,27 +180,43 @@ export default function CartDrawer({ onCheckout }) {
 
         {/* Footer */}
         {cart.length > 0 && (
-          <div style={{ padding: "18px 28px 28px", borderTop: "1px solid #E8E6E0" }}>
+          <div
+            style={{
+              padding: "18px 28px 28px",
+              borderTop: "1px solid #E8E6E0",
+            }}>
             <div
               style={{
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
                 marginBottom: 18,
-              }}
-            >
-              <span style={{ fontSize: 11, letterSpacing: 2, textTransform: "uppercase", color: "#888880" }}>
+              }}>
+              <span
+                style={{
+                  fontSize: 11,
+                  letterSpacing: 2,
+                  textTransform: "uppercase",
+                  color: "#888880",
+                }}>
                 Total
               </span>
-              <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 26, fontWeight: 400 }}>
+              <span
+                style={{
+                  fontFamily: "'Cormorant Garamond', serif",
+                  fontSize: 26,
+                  fontWeight: 400,
+                }}>
                 {fmt(cartTotal)}
               </span>
             </div>
             <button
               className="btn-dark"
               style={{ width: "100%" }}
-              onClick={() => { setShowCart(false); onCheckout(); }}
-            >
+              onClick={() => {
+                setShowCart(false);
+                onCheckout();
+              }}>
               Proceed to Checkout
             </button>
             <button
@@ -202,8 +230,7 @@ export default function CartDrawer({ onCheckout }) {
                 color: "#B0AEA8",
                 cursor: "pointer",
                 letterSpacing: 1,
-              }}
-            >
+              }}>
               Continue Shopping
             </button>
           </div>

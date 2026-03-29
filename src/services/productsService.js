@@ -1,8 +1,21 @@
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
+import {
+  collection,
+  getDocs,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+  writeBatch,
+  getDoc,
+  setDoc,
+  runTransaction,
+  collection as collectionFn,
+} from 'firebase/firestore';
 import { db } from '../firebase';
 
 // Products collection reference
 const productsCollection = collection(db, 'products');
+const settingsDocRef = doc(db, 'metadata', 'productsInitialized');
 
 // Get all products from Firestore
 export const getProductsFromFirestore = async () => {
@@ -55,18 +68,31 @@ export const deleteProductFromFirestore = async (id) => {
 // Initialize products in Firestore (run once to set up initial data)
 export const initializeProductsInFirestore = async (initialProducts) => {
   try {
-    // Check if products already exist
-    const existingProducts = await getProductsFromFirestore();
-    if (existingProducts.length > 0) {
-      console.log('Products already initialized in Firestore');
+    await runTransaction(db, async (tx) => {
+      const settingsSnap = await tx.get(settingsDocRef);
+      if (settingsSnap.exists()) {
+        console.log('Products already initialized in Firestore');
+        return;
+      }
+
+      // Write initial products in a batch
+      const batch = writeBatch(db);
+      initialProducts.forEach((product) => {
+        const prodRef = doc(productsCollection);
+        batch.set(prodRef, product);
+      });
+
+      // mark initialization complete
+      batch.set(settingsDocRef, { initializedAt: new Date().toISOString() });
+      await batch.commit();
+      console.log('Initial products added to Firestore');
+    });
+  } catch (error) {
+    if (error.name === 'FirebaseError' && error.code === 'aborted') {
+      // Transaction aborted; maybe another process already initialized
+      console.log('Initialization transaction aborted, likely already initialized.');
       return;
     }
-
-    // Add initial products
-    const promises = initialProducts.map(product => addDoc(productsCollection, product));
-    await Promise.all(promises);
-    console.log('Initial products added to Firestore');
-  } catch (error) {
     console.error('Error initializing products:', error);
   }
 };

@@ -16,7 +16,7 @@ export default function Admin({
     price: "",
     category: "Seating",
     desc: "",
-    img: "",
+    imgs: [],
     bestSelling: false,
   });
   const [editingId, setEditingId] = useState(null);
@@ -60,7 +60,8 @@ export default function Admin({
 
       if (!response.ok) throw new Error("Upload failed");
       const data = await response.json();
-      setField("img", data.secure_url);
+      // Add to imgs array instead of replacing
+      setForm(f => ({ ...f, imgs: [...f.imgs, data.secure_url] }));
       toast.success("Image uploaded successfully!");
     } catch (error) {
       toast.error("Failed to upload image. Check your Cloudinary credentials.");
@@ -70,9 +71,17 @@ export default function Admin({
     }
   };
 
+  const handleRemoveImage = (index) => {
+    setForm(f => ({
+      ...f,
+      imgs: f.imgs.filter((_, i) => i !== index)
+    }));
+    toast.success("Image removed");
+  };
+
   const handleSave = async () => {
-    if (!form.name.trim() || !form.price || !form.img.trim()) {
-      toast.error("Please fill in Name, Price, and Image URL.");
+    if (!form.name.trim() || !form.price || form.imgs.length === 0) {
+      toast.error("Please fill in Name, Price, and add at least one image.");
       return;
     }
     const price = parseInt(form.price.replace(/[^0-9]/g, ""), 10);
@@ -102,7 +111,7 @@ export default function Admin({
         price: "",
         category: "Seating",
         desc: "",
-        img: "",
+        imgs: [],
         bestSelling: false,
       });
       setEditingId(null);
@@ -119,10 +128,22 @@ export default function Admin({
       price: String(prod.price),
       category: prod.category,
       desc: prod.desc || "",
-      img: prod.img,
+      imgs: prod.imgs || (prod.img ? [prod.img] : []),
       bestSelling: prod.bestSelling || false,
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setForm({
+      name: "",
+      price: "",
+      category: "Seating",
+      desc: "",
+      imgs: [],
+      bestSelling: false,
+    });
   };
 
   const handleDelete = (id) => {
@@ -384,7 +405,7 @@ export default function Admin({
                   display: "block",
                   marginBottom: 7,
                 }}>
-                Product Image *
+                Product Images * ({form.imgs.length} uploaded)
               </label>
               <label
                 style={{
@@ -407,7 +428,7 @@ export default function Admin({
                   disabled={uploading}
                   style={{ display: "none" }}
                 />
-                {uploading ? "Uploading..." : "📁 Choose Image"}
+                {uploading ? "Uploading..." : "📁 Add Image"}
               </label>
             </div>
           </div>
@@ -454,8 +475,8 @@ export default function Admin({
             </label>
           </div>
 
-          {/* Image preview */}
-          {form.img && (
+          {/* Image preview gallery */}
+          {form.imgs.length > 0 && (
             <div style={{ marginTop: 16 }}>
               <div
                 style={{
@@ -471,35 +492,70 @@ export default function Admin({
                     textTransform: "uppercase",
                     color: "#888880",
                   }}>
-                  Image Preview
+                  Image Gallery ({form.imgs.length})
                 </label>
-                <button
-                  type="button"
-                  onClick={() => setField("img", "")}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    color: "#C0392B",
-                    fontSize: 10,
-                    cursor: "pointer",
-                    textDecoration: "underline",
-                    padding: 0,
-                  }}>
-                  Clear Image
-                </button>
               </div>
-              <img
-                src={form.img}
-                alt="preview"
+              <div
                 style={{
-                  height: 120,
-                  objectFit: "cover",
-                  border: "1px solid #E8E6E0",
-                }}
-                onError={(e) => {
-                  e.target.style.display = "none";
-                }}
-              />
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))",
+                  gap: 12,
+                  marginBottom: 12,
+                }}>
+                {form.imgs.map((img, idx) => (
+                  <div
+                    key={idx}
+                    style={{
+                      position: "relative",
+                      paddingBottom: "100%",
+                      background: "#f5f5f5",
+                      border: "1px solid #E8E6E0",
+                      borderRadius: 4,
+                      overflow: "hidden",
+                    }}>
+                    <img
+                      src={img}
+                      alt={`preview-${idx}`}
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
+                      onError={(e) => {
+                        e.target.style.display = "none";
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveImage(idx)}
+                      style={{
+                        position: "absolute",
+                        top: 2,
+                        right: 2,
+                        background: "rgba(192, 57, 43, 0.9)",
+                        border: "none",
+                        color: "#fff",
+                        width: 20,
+                        height: 20,
+                        fontSize: 12,
+                        cursor: "pointer",
+                        borderRadius: 3,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        transition: "background 0.2s",
+                      }}
+                      onMouseEnter={(e) => e.target.style.background = "#C0392B"}
+                      onMouseLeave={(e) => e.target.style.background = "rgba(192, 57, 43, 0.9)"}
+                      title="Remove image">
+                        ×
+                      </button>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
@@ -851,7 +907,7 @@ export default function Admin({
                 boxShadow: "0 1px 8px rgba(0,0,0,0.04)",
               }}>
               <img
-                src={prod.img}
+                src={prod.imgs?.[0] || prod.img || "https://via.placeholder.com/64x64?text=No+Img"}
                 alt={prod.name}
                 style={{
                   width: 64,
