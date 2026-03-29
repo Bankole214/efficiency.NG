@@ -8,7 +8,7 @@ import QuickViewModal from "../components/QuickViewModal";
 import Footer from "../components/Footer";
 import toast from "react-hot-toast";
 
-export default function Shop({ products, onAdminClick }) {
+export default function Shop({ products, onAdminClick, onReviewClick, onAboutClick }) {
   const [filterCat, setFilterCat] = useState("All");
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [quickView, setQuickView] = useState(null);
@@ -103,7 +103,11 @@ export default function Shop({ products, onAdminClick }) {
         )}
       </main>
 
-      <Footer onAdminClick={onAdminClick} />
+      <Footer
+        onAdminClick={onAdminClick}
+        onReviewClick={onReviewClick}
+        onAboutClick={onAboutClick}
+      />
 
       <CartDrawer onCheckout={() => setCheckoutOpen(true)} />
       <CheckoutModal

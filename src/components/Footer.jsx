@@ -10,7 +10,7 @@ const WHATSAPP_MESSAGE = encodeURIComponent(
 const INSTAGRAM_URL = `https://instagram.com/${INSTAGRAM_USERNAME}`;
 const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MESSAGE}`;
 
-export default function Footer({ onAdminClick }) {
+export default function Footer({ onAdminClick, onReviewClick, onAboutClick }) {
   return (
     <footer
       style={{
@@ -132,6 +132,56 @@ export default function Footer({ onAdminClick }) {
               </span>
               Follow on Instagram
             </a>
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <div>
+          <p
+            style={{
+              fontSize: 10,
+              letterSpacing: 2,
+              textTransform: "uppercase",
+              color: "#B0AEA8",
+              marginBottom: 16,
+            }}>
+            Explore
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <button
+              onClick={onReviewClick}
+              style={{
+                background: "none",
+                border: "none",
+                textAlign: "left",
+                cursor: "pointer",
+                color: "#1C1C1A",
+                fontSize: 13,
+                fontWeight: 400,
+                padding: 0,
+                transition: "color 0.2s",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "#C49A6C")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "#1C1C1A")}>
+              Customer Reviews
+            </button>
+            <button
+              onClick={onAboutClick}
+              style={{
+                background: "none",
+                border: "none",
+                textAlign: "left",
+                cursor: "pointer",
+                color: "#1C1C1A",
+                fontSize: 13,
+                fontWeight: 400,
+                padding: 0,
+                transition: "color 0.2s",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "#C49A6C")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "#1C1C1A")}>
+              About Us
+            </button>
           </div>
         </div>
       </div>

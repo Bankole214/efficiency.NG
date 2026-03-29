@@ -5,6 +5,8 @@ import { INITIAL_PRODUCTS } from "./data/products";
 import Shop from "./pages/Shop";
 import AdminLogin from "./pages/AdminLogin";
 import Admin from "./pages/Admin";
+import Review from "./pages/Review";
+import AboutUs from "./pages/AboutUs";
 import "./styles/global.css";
 
 // Load Paystack script once at the app level
@@ -44,7 +46,7 @@ function useProducts() {
 export default function App() {
   usePaystack();
   const [products, setProducts] = useProducts();
-  const [view, setView] = useState("shop"); // "shop" | "adminLogin" | "admin"
+  const [view, setView] = useState("shop"); // "shop" | "adminLogin" | "admin" | "review" | "about"
   const [adminAuthed, setAdminAuthed] = useState(false);
   const { trackVisit } = useAnalytics();
   const hasTracked = useRef(false);
@@ -91,7 +93,14 @@ export default function App() {
           },
         }}
       />
-      {view === "shop" && <Shop products={products} onAdminClick={goAdmin} />}
+      {view === "shop" && (
+        <Shop
+          products={products}
+          onAdminClick={goAdmin}
+          onReviewClick={() => setView("review")}
+          onAboutClick={() => setView("about")}
+        />
+      )}
 
       {view === "adminLogin" && (
         <AdminLogin
@@ -113,6 +122,14 @@ export default function App() {
             setView("shop");
           }}
         />
+      )}
+
+      {view === "review" && (
+        <Review onBackToShop={() => setView("shop")} />
+      )}
+
+      {view === "about" && (
+        <AboutUs onBackToShop={() => setView("shop")} />
       )}
     </>
   );
