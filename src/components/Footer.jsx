@@ -132,6 +132,17 @@ export default function Footer({ onAdminClick, onReviewClick, onAboutClick }) {
               </span>
               Follow on Instagram
             </a>
+
+            {/* Workshop Address */}
+            <p
+              style={{
+                fontSize: 13,
+                color: "#666660",
+                lineHeight: 1.5,
+                marginTop: 16,
+              }}>
+              Workshop Address: 68 Nigerian Army Reference Hospital Myhoung Barracks Ya𝒃𝒂 Lagos, Nigeria
+            </p>
           </div>
         </div>
 
