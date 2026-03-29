@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Toaster } from "react-hot-toast";
 import { useAnalytics } from "./context/AnalyticsContext";
 import { INITIAL_PRODUCTS } from "./data/products";
@@ -47,9 +47,13 @@ export default function App() {
   const [view, setView] = useState("shop"); // "shop" | "adminLogin" | "admin"
   const [adminAuthed, setAdminAuthed] = useState(false);
   const { trackVisit } = useAnalytics();
+  const hasTracked = useRef(false);
 
   useEffect(() => {
-    trackVisit();
+    if (!hasTracked.current) {
+      trackVisit();
+      hasTracked.current = true;
+    }
   }, [trackVisit]);
 
   const goAdmin = () => {

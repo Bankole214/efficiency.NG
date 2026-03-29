@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 
 const AnalyticsContext = createContext(null);
 
@@ -110,9 +110,9 @@ export function AnalyticsProvider({ children }) {
     });
   };
 
-  const trackVisit = () => {
+  const trackVisit = useCallback(() => {
     setAnalytics((prev) => ({ ...prev, totalVisits: prev.totalVisits + 1 }));
-  };
+  }, []);
 
   const clearAnalytics = () => {
     setAnalytics({
