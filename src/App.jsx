@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { Toaster } from "react-hot-toast";
 import { useAnalytics } from "./context/AnalyticsContext";
 import { INITIAL_PRODUCTS } from "./data/products";
+import { getProductsFromFirestore, initializeProductsInFirestore } from "./services/productsService";
 import Shop from "./pages/Shop";
 import AdminLogin from "./pages/AdminLogin";
 import Admin from "./pages/Admin";
@@ -20,32 +21,46 @@ function usePaystack() {
   }, []);
 }
 
-// Persist products in localStorage
+// Persist products in Firestore (shared across all users)
 function useProducts() {
-  const [products, setProducts] = useState(() => {
-    try {
-      const stored = localStorage.getItem("furni_products");
-      const parsed = stored ? JSON.parse(stored) : INITIAL_PRODUCTS;
-      // Ensure all products have bestSelling property
-      return parsed.map((p) => ({ ...p, bestSelling: p.bestSelling || false }));
-    } catch {
-      return INITIAL_PRODUCTS;
-    }
-  });
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Load products from Firestore on mount
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const firestoreProducts = await getProductsFromFirestore();
+        if (firestoreProducts.length === 0) {
+          // Initialize with default products if none exist
+          await initializeProductsInFirestore(INITIAL_PRODUCTS);
+          setProducts(INITIAL_PRODUCTS.map((p) => ({ ...p, bestSelling: p.bestSelling || false })));
+        } else {
+          // Ensure all products have bestSelling property
+          setProducts(firestoreProducts.map((p) => ({ ...p, bestSelling: p.bestSelling || false })));
+        }
+      } catch (error) {
+        console.error('Error loading products:', error);
+        // Fallback to initial products
+        setProducts(INITIAL_PRODUCTS.map((p) => ({ ...p, bestSelling: p.bestSelling || false })));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProducts();
+  }, []);
 
   const updateProducts = (next) => {
     setProducts(next);
-    try {
-      localStorage.setItem("furni_products", JSON.stringify(next));
-    } catch {}
   };
 
-  return [products, updateProducts];
+  return [products, updateProducts, loading];
 }
 
 export default function App() {
   usePaystack();
-  const [products, setProducts] = useProducts();
+  const [products, setProducts, loading] = useProducts();
   const [view, setView] = useState("shop"); // "shop" | "adminLogin" | "admin" | "review" | "about"
   const [adminAuthed, setAdminAuthed] = useState(false);
   const { trackVisit } = useAnalytics();
@@ -65,6 +80,22 @@ export default function App() {
       setView("adminLogin");
     }
   };
+
+  // Show loading while fetching products
+  if (loading) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        fontSize: '18px',
+        color: '#888880'
+      }}>
+        Loading products...
+      </div>
+    );
+  }
 
   return (
     <>

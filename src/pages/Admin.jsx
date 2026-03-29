@@ -3,6 +3,7 @@ import { fmt, CATEGORIES } from "../data/products";
 import toast from "react-hot-toast";
 import { useConfirm } from "../hooks/useConfirm.jsx";
 import { useAnalytics } from "../context/AnalyticsContext";
+import { addProductToFirestore, updateProductInFirestore, deleteProductFromFirestore } from "../services/productsService";
 
 export default function Admin({
   products,
@@ -69,7 +70,7 @@ export default function Admin({
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.name.trim() || !form.price || !form.img.trim()) {
       toast.error("Please fill in Name, Price, and Image URL.");
       return;
@@ -80,27 +81,35 @@ export default function Admin({
       return;
     }
 
-    if (editingId) {
-      onProductsChange(
-        products.map((p) =>
-          p.id === editingId ? { ...p, ...form, price } : p,
-        ),
-      );
-      toast.success("Product updated successfully!");
-    } else {
-      onProductsChange([...products, { id: "p" + Date.now(), ...form, price }]);
-      toast.success("Product added to the store!");
-    }
+    try {
+      if (editingId) {
+        await updateProductInFirestore(editingId, { ...form, price });
+        onProductsChange(
+          products.map((p) =>
+            p.id === editingId ? { ...p, ...form, price } : p,
+          ),
+        );
+        toast.success("Product updated successfully!");
+      } else {
+        const newProduct = { ...form, price };
+        const addedProduct = await addProductToFirestore(newProduct);
+        onProductsChange([...products, addedProduct]);
+        toast.success("Product added to the store!");
+      }
 
-    setForm({
-      name: "",
-      price: "",
-      category: "Seating",
-      desc: "",
-      img: "",
-      bestSelling: false,
-    });
-    setEditingId(null);
+      setForm({
+        name: "",
+        price: "",
+        category: "Seating",
+        desc: "",
+        img: "",
+        bestSelling: false,
+      });
+      setEditingId(null);
+    } catch (error) {
+      toast.error("Failed to save product. Please try again.");
+      console.error("Error saving product:", error);
+    }
   };
 
   const handleEdit = (prod) => {
@@ -121,9 +130,15 @@ export default function Admin({
     if (product) {
       confirm(
         `Are you sure you want to delete "${product.name}"?`,
-        () => {
-          onProductsChange(products.filter((p) => p.id !== id));
-          toast.success(`"${product.name}" deleted successfully`);
+        async () => {
+          try {
+            await deleteProductFromFirestore(id);
+            onProductsChange(products.filter((p) => p.id !== id));
+            toast.success(`"${product.name}" deleted successfully`);
+          } catch (error) {
+            toast.error("Failed to delete product. Please try again.");
+            console.error("Error deleting product:", error);
+          }
         },
         undefined,
         "Delete",
@@ -131,17 +146,24 @@ export default function Admin({
     }
   };
 
-  const handleToggleBestSelling = (id) => {
+  const handleToggleBestSelling = async (id) => {
     const product = products.find((p) => p.id === id);
     if (product) {
-      onProductsChange(
-        products.map((p) =>
-          p.id === id ? { ...p, bestSelling: !p.bestSelling } : p,
-        ),
-      );
-      toast.success(
-        `"${product.name}" ${product.bestSelling ? "removed from" : "marked as"} best selling`,
-      );
+      try {
+        const newBestSelling = !product.bestSelling;
+        await updateProductInFirestore(id, { bestSelling: newBestSelling });
+        onProductsChange(
+          products.map((p) =>
+            p.id === id ? { ...p, bestSelling: newBestSelling } : p,
+          ),
+        );
+        toast.success(
+          `"${product.name}" ${newBestSelling ? "marked as" : "removed from"} best selling`,
+        );
+      } catch (error) {
+        toast.error("Failed to update product. Please try again.");
+        console.error("Error updating product:", error);
+      }
     }
   };
 
