@@ -14,6 +14,8 @@ export default function CheckoutModal({ open, onClose, onSuccess }) {
   const { cart, cartTotal, clearCart } = useCart();
   const { trackPurchase } = useAnalytics();
   const [form, setForm] = useState({ name: "", email: "", phone: "" });
+  const [showReceipt, setShowReceipt] = useState(false);
+  const [orderDetails, setOrderDetails] = useState(null);
 
   if (!open) return null;
 
@@ -27,12 +29,13 @@ export default function CheckoutModal({ open, onClose, onSuccess }) {
       );
       return;
     }
+    const orderRef = "FNS_" + Date.now();
     const handler = window.PaystackPop.setup({
       key: PAYSTACK_PUBLIC_KEY,
       email: form.email,
       amount: cartTotal * 100, // Paystack expects kobo
       currency: "NGN",
-      ref: "FNS_" + Date.now(),
+      ref: orderRef,
       metadata: {
         custom_fields: [
           {
@@ -45,11 +48,25 @@ export default function CheckoutModal({ open, onClose, onSuccess }) {
       },
       callback: () => {
         // Track the purchase for analytics
-        trackPurchase(cart, cartTotal);
+        trackPurchase(cart, {
+          name: form.name,
+          email: form.email,
+          phone: form.phone,
+        });
+
+        // Prepare order details for receipt
+        const order = {
+          ref: orderRef,
+          date: new Date().toLocaleString(),
+          customer: form,
+          items: cart,
+          total: cartTotal,
+        };
+        setOrderDetails(order);
+        setShowReceipt(true);
 
         clearCart();
         setForm({ name: "", email: "", phone: "" });
-        onClose();
         onSuccess();
       },
       onClose: () => {},
@@ -76,7 +93,14 @@ export default function CheckoutModal({ open, onClose, onSuccess }) {
           background: "rgba(0,0,0,0.5)",
           animation: "fadeIn 0.25s",
         }}
-        onClick={onClose}
+        onClick={() => {
+          if (showReceipt) {
+            setShowReceipt(false);
+            onClose();
+          } else {
+            onClose();
+          }
+        }}
       />
 
       {/* Modal */}
@@ -99,161 +123,270 @@ export default function CheckoutModal({ open, onClose, onSuccess }) {
             marginBottom: 24,
           }}
         />
-        <h2
-          style={{
-            fontFamily: "'Cormorant Garamond', serif",
-            fontSize: 30,
-            fontWeight: 400,
-            marginBottom: 6,
-          }}>
-          Checkout
-        </h2>
-        <p
-          style={{
-            fontSize: 13,
-            color: "#888880",
-            marginBottom: 28,
-            lineHeight: 1.6,
-          }}>
-          Enter your details. You'll be securely redirected to Paystack to
-          complete your payment.
-        </p>
-
-        {/* Fields */}
-        {[
-          {
-            key: "name",
-            label: "Full Name",
-            placeholder: "Chidi Okonkwo",
-            type: "text",
-          },
-          {
-            key: "email",
-            label: "Email Address",
-            placeholder: "you@example.com",
-            type: "email",
-          },
-          {
-            key: "phone",
-            label: "Phone Number",
-            placeholder: "+234 800 000 0000",
-            type: "tel",
-          },
-        ].map((f) => (
-          <div key={f.key} style={{ marginBottom: 16 }}>
-            <label
-              style={{
-                fontSize: 10,
-                letterSpacing: 1.5,
-                textTransform: "uppercase",
-                color: "#888880",
-                display: "block",
-                marginBottom: 7,
-              }}>
-              {f.label}
-            </label>
-            <input
-              type={f.type}
-              className="input-field"
-              value={form[f.key]}
-              placeholder={f.placeholder}
-              onChange={(e) =>
-                setForm((prev) => ({ ...prev, [f.key]: e.target.value }))
-              }
-            />
-          </div>
-        ))}
-
-        {/* Order Summary */}
-        <div
-          style={{
-            background: "#F8F7F4",
-            padding: "16px 18px",
-            margin: "8px 0 24px",
-          }}>
-          {cart.map((item) => (
-            <div
-              key={item.product.id}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                fontSize: 13,
-                marginBottom: 6,
-                color: "#888880",
-              }}>
-              <span>
-                {item.product.name} × {item.qty}
-              </span>
-              <span>{fmt(item.product.price * item.qty)}</span>
-            </div>
-          ))}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              paddingTop: 12,
-              marginTop: 8,
-              borderTop: "1px solid #E8E6E0",
-            }}>
-            <span
-              style={{
-                fontSize: 11,
-                letterSpacing: 1.5,
-                textTransform: "uppercase",
-                color: "#888880",
-              }}>
-              Total
-            </span>
-            <span
+        {showReceipt ? (
+          <>
+            <h2
               style={{
                 fontFamily: "'Cormorant Garamond', serif",
-                fontSize: 20,
-                fontWeight: 500,
+                fontSize: 30,
+                fontWeight: 400,
+                marginBottom: 6,
               }}>
-              {fmt(cartTotal)}
-            </span>
-          </div>
-        </div>
+              Order Confirmed
+            </h2>
+            <p
+              style={{
+                fontSize: 13,
+                color: "#888880",
+                marginBottom: 28,
+                lineHeight: 1.6,
+              }}>
+              Thank you for your purchase! Here's your order confirmation.
+            </p>
 
-        {!isValid && (
-          <p style={{ fontSize: 12, color: "#C49A6C", marginBottom: 12 }}>
-            Please fill in all fields to continue.
-          </p>
+            <div
+              style={{
+                background: "#F8F7F4",
+                padding: "16px 18px",
+                marginBottom: 24,
+              }}>
+              <div style={{ marginBottom: 12 }}>
+                <strong>Order ID:</strong> {orderDetails?.ref}
+              </div>
+              <div style={{ marginBottom: 12 }}>
+                <strong>Date:</strong> {orderDetails?.date}
+              </div>
+              <div style={{ marginBottom: 12 }}>
+                <strong>Customer:</strong> {orderDetails?.customer.name}
+              </div>
+              <div style={{ marginBottom: 12 }}>
+                <strong>Email:</strong> {orderDetails?.customer.email}
+              </div>
+              <div style={{ marginBottom: 12 }}>
+                <strong>Phone:</strong> {orderDetails?.customer.phone}
+              </div>
+            </div>
+
+            <div
+              style={{
+                background: "#F8F7F4",
+                padding: "16px 18px",
+                marginBottom: 24,
+              }}>
+              <h3 style={{ marginBottom: 12, fontSize: 16 }}>Order Items</h3>
+              {orderDetails?.items.map((item) => (
+                <div
+                  key={item.product.id}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    fontSize: 13,
+                    marginBottom: 6,
+                    color: "#888880",
+                  }}>
+                  <span>
+                    {item.product.name} × {item.qty}
+                  </span>
+                  <span>{fmt(item.product.price * item.qty)}</span>
+                </div>
+              ))}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  paddingTop: 12,
+                  marginTop: 8,
+                  borderTop: "1px solid #E8E6E0",
+                }}>
+                <span
+                  style={{
+                    fontSize: 11,
+                    letterSpacing: 1.5,
+                    textTransform: "uppercase",
+                    color: "#888880",
+                  }}>
+                  Total
+                </span>
+                <span
+                  style={{
+                    fontFamily: "'Cormorant Garamond', serif",
+                    fontSize: 20,
+                    fontWeight: 500,
+                  }}>
+                  {fmt(orderDetails?.total)}
+                </span>
+              </div>
+            </div>
+
+            <button
+              className="btn-dark"
+              style={{ width: "100%" }}
+              onClick={() => {
+                setShowReceipt(false);
+                onClose();
+              }}>
+              Continue Shopping
+            </button>
+          </>
+        ) : (
+          <>
+            <h2
+              style={{
+                fontFamily: "'Cormorant Garamond', serif",
+                fontSize: 30,
+                fontWeight: 400,
+                marginBottom: 6,
+              }}>
+              Checkout
+            </h2>
+            <p
+              style={{
+                fontSize: 13,
+                color: "#888880",
+                marginBottom: 28,
+                lineHeight: 1.6,
+              }}>
+              Enter your details. You'll be securely redirected to Paystack to
+              complete your payment.
+            </p>
+
+            {/* Fields */}
+            {[
+              {
+                key: "name",
+                label: "Full Name",
+                placeholder: "Chidi Okonkwo",
+                type: "text",
+              },
+              {
+                key: "email",
+                label: "Email Address",
+                placeholder: "you@example.com",
+                type: "email",
+              },
+              {
+                key: "phone",
+                label: "Phone Number",
+                placeholder: "+234 800 000 0000",
+                type: "tel",
+              },
+            ].map((f) => (
+              <div key={f.key} style={{ marginBottom: 16 }}>
+                <label
+                  style={{
+                    fontSize: 10,
+                    letterSpacing: 1.5,
+                    textTransform: "uppercase",
+                    color: "#888880",
+                    display: "block",
+                    marginBottom: 7,
+                  }}>
+                  {f.label}
+                </label>
+                <input
+                  type={f.type}
+                  className="input-field"
+                  value={form[f.key]}
+                  placeholder={f.placeholder}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, [f.key]: e.target.value }))
+                  }
+                />
+              </div>
+            ))}
+
+            {/* Order Summary */}
+            <div
+              style={{
+                background: "#F8F7F4",
+                padding: "16px 18px",
+                margin: "8px 0 24px",
+              }}>
+              {cart.map((item) => (
+                <div
+                  key={item.product.id}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    fontSize: 13,
+                    marginBottom: 6,
+                    color: "#888880",
+                  }}>
+                  <span>
+                    {item.product.name} × {item.qty}
+                  </span>
+                  <span>{fmt(item.product.price * item.qty)}</span>
+                </div>
+              ))}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  paddingTop: 12,
+                  marginTop: 8,
+                  borderTop: "1px solid #E8E6E0",
+                }}>
+                <span
+                  style={{
+                    fontSize: 11,
+                    letterSpacing: 1.5,
+                    textTransform: "uppercase",
+                    color: "#888880",
+                  }}>
+                  Total
+                </span>
+                <span
+                  style={{
+                    fontFamily: "'Cormorant Garamond', serif",
+                    fontSize: 20,
+                    fontWeight: 500,
+                  }}>
+                  {fmt(cartTotal)}
+                </span>
+              </div>
+            </div>
+
+            {!isValid && (
+              <p style={{ fontSize: 12, color: "#C49A6C", marginBottom: 12 }}>
+                Please fill in all fields to continue.
+              </p>
+            )}
+
+            <button
+              className="btn-dark"
+              style={{ width: "100%", opacity: isValid ? 1 : 0.5 }}
+              onClick={handlePay}>
+              Pay {fmt(cartTotal)} with Paystack
+            </button>
+
+            <button
+              onClick={onClose}
+              style={{
+                marginTop: 12,
+                width: "100%",
+                background: "none",
+                border: "none",
+                fontSize: 11,
+                color: "#B0AEA8",
+                cursor: "pointer",
+                letterSpacing: 1,
+              }}>
+              Cancel
+            </button>
+
+            <p
+              style={{
+                fontSize: 11,
+                color: "#C0BEBA",
+                marginTop: 20,
+                textAlign: "center",
+                lineHeight: 1.6,
+              }}>
+              🔒 Payments are processed securely by Paystack. Your card details
+              are never stored.
+            </p>
+          </>
         )}
-
-        <button
-          className="btn-dark"
-          style={{ width: "100%", opacity: isValid ? 1 : 0.5 }}
-          onClick={handlePay}>
-          Pay {fmt(cartTotal)} with Paystack
-        </button>
-
-        <button
-          onClick={onClose}
-          style={{
-            marginTop: 12,
-            width: "100%",
-            background: "none",
-            border: "none",
-            fontSize: 11,
-            color: "#B0AEA8",
-            cursor: "pointer",
-            letterSpacing: 1,
-          }}>
-          Cancel
-        </button>
-
-        <p
-          style={{
-            fontSize: 11,
-            color: "#C0BEBA",
-            marginTop: 20,
-            textAlign: "center",
-            lineHeight: 1.6,
-          }}>
-          🔒 Payments are processed securely by Paystack. Your card details are
-          never stored.
-        </p>
       </div>
     </div>
   );

@@ -87,9 +87,7 @@ export default function App() {
           },
         }}
       />
-      {view === "shop" && (
-        <Shop products={products} onAdminClick={goAdmin} />
-      )}
+      {view === "shop" && <Shop products={products} onAdminClick={goAdmin} />}
 
       {view === "adminLogin" && (
         <AdminLogin
