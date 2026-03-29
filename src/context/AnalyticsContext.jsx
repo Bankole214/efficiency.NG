@@ -6,6 +6,7 @@ const AnalyticsContext = createContext(null);
 // {
 //   totalRevenue: number,
 //   totalOrders: number,
+//   totalVisits: number,
 //   itemSales: { [itemId]: { name, category, quantity, revenue } },
 //   categorySales: { [category]: { quantity, revenue } },
 //   orders: [{ date, items, total, customerName }]
@@ -20,6 +21,7 @@ export function AnalyticsProvider({ children }) {
         : {
             totalRevenue: 0,
             totalOrders: 0,
+            totalVisits: 0,
             itemSales: {},
             categorySales: {},
             orders: [],
@@ -28,6 +30,7 @@ export function AnalyticsProvider({ children }) {
       return {
         totalRevenue: 0,
         totalOrders: 0,
+        totalVisits: 0,
         itemSales: {},
         categorySales: {},
         orders: [],
@@ -107,10 +110,15 @@ export function AnalyticsProvider({ children }) {
     });
   };
 
+  const trackVisit = () => {
+    setAnalytics((prev) => ({ ...prev, totalVisits: prev.totalVisits + 1 }));
+  };
+
   const clearAnalytics = () => {
     setAnalytics({
       totalRevenue: 0,
       totalOrders: 0,
+      totalVisits: 0,
       itemSales: {},
       categorySales: {},
       orders: [],
@@ -151,6 +159,7 @@ export function AnalyticsProvider({ children }) {
   const computedAnalytics = {
     totalRevenue: analytics.totalRevenue,
     totalSales: analytics.totalOrders,
+    totalVisits: analytics.totalVisits,
     averageOrderValue:
       analytics.totalOrders > 0
         ? analytics.totalRevenue / analytics.totalOrders
@@ -178,6 +187,7 @@ export function AnalyticsProvider({ children }) {
       value={{
         analytics: computedAnalytics,
         trackPurchase,
+        trackVisit,
         clearAnalytics,
         getBestSellingItem,
         getBestSellingCategory,

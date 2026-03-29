@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
-import { CartProvider } from "./context/CartContext";
-import { AnalyticsProvider } from "./context/AnalyticsContext";
 import { Toaster } from "react-hot-toast";
+import { useAnalytics } from "./context/AnalyticsContext";
 import { INITIAL_PRODUCTS } from "./data/products";
 import Shop from "./pages/Shop";
 import AdminLogin from "./pages/AdminLogin";
@@ -47,6 +46,11 @@ export default function App() {
   const [products, setProducts] = useProducts();
   const [view, setView] = useState("shop"); // "shop" | "adminLogin" | "admin"
   const [adminAuthed, setAdminAuthed] = useState(false);
+  const { trackVisit } = useAnalytics();
+
+  useEffect(() => {
+    trackVisit();
+  }, [trackVisit]);
 
   const goAdmin = () => {
     if (adminAuthed) {
@@ -83,35 +87,31 @@ export default function App() {
           },
         }}
       />
-      <AnalyticsProvider>
-        <CartProvider>
-          {view === "shop" && (
-            <Shop products={products} onAdminClick={goAdmin} />
-          )}
+      {view === "shop" && (
+        <Shop products={products} onAdminClick={goAdmin} />
+      )}
 
-          {view === "adminLogin" && (
-            <AdminLogin
-              onSuccess={() => {
-                setAdminAuthed(true);
-                setView("admin");
-              }}
-              onBack={() => setView("shop")}
-            />
-          )}
+      {view === "adminLogin" && (
+        <AdminLogin
+          onSuccess={() => {
+            setAdminAuthed(true);
+            setView("admin");
+          }}
+          onBack={() => setView("shop")}
+        />
+      )}
 
-          {view === "admin" && (
-            <Admin
-              products={products}
-              onProductsChange={setProducts}
-              onViewShop={() => setView("shop")}
-              onSignOut={() => {
-                setAdminAuthed(false);
-                setView("shop");
-              }}
-            />
-          )}
-        </CartProvider>
-      </AnalyticsProvider>
+      {view === "admin" && (
+        <Admin
+          products={products}
+          onProductsChange={setProducts}
+          onViewShop={() => setView("shop")}
+          onSignOut={() => {
+            setAdminAuthed(false);
+            setView("shop");
+          }}
+        />
+      )}
     </>
   );
 }

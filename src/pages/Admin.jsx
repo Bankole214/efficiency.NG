@@ -582,6 +582,33 @@ export default function Admin({
                   color: "#C49A6C",
                   marginBottom: 4,
                 }}>
+                {analytics.totalVisits}
+              </div>
+              <div
+                style={{
+                  fontSize: 12,
+                  color: "#888880",
+                  textTransform: "uppercase",
+                  letterSpacing: 1,
+                }}>
+                Total Visits
+              </div>
+            </div>
+
+            <div
+              style={{
+                background: "#F8F7F4",
+                padding: 20,
+                borderRadius: 8,
+                textAlign: "center",
+              }}>
+              <div
+                style={{
+                  fontSize: 28,
+                  fontWeight: 600,
+                  color: "#C49A6C",
+                  marginBottom: 4,
+                }}>
                 ₦
                 {analytics.averageOrderValue
                   ? fmt(analytics.averageOrderValue)
