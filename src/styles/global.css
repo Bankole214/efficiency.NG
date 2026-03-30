@@ -6,6 +6,11 @@
   padding: 0;
 }
 
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+}
+
 body {
   font-family: 'DM Sans', sans-serif;
   background: #F8F7F4;
