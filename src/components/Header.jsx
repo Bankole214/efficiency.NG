@@ -96,14 +96,21 @@ export default function Header({
             gap: "clamp(10px,2vw,24px)",
             alignItems: "center",
             overflowX: "auto",
+            WebkitOverflowScrolling: "touch",
             scrollbarWidth: "none",
+            msOverflowStyle: "none",
             flexShrink: 1,
+            paddingBottom: "4px", // slight padding so shadow/active border doesn't clip
           }}>
+          <style>{`
+            nav::-webkit-scrollbar { display: none; }
+          `}</style>
           {categories.map((cat) => (
             <button
               key={cat}
               className={`nav-cat-light${activeCategory === cat ? " active" : ""}`}
-              onClick={() => onCategoryChange(cat)}>
+              onClick={() => onCategoryChange(cat)}
+              style={{ flexShrink: 0, whiteSpace: "nowrap" }}>
               {cat}
             </button>
           ))}

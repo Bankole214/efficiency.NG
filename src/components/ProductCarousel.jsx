@@ -2,31 +2,23 @@ import { useState } from "react";
 import ProductCard from "./ProductCard";
 
 export default function ProductCarousel({ products, onQuickView }) {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [scrollRatio, setScrollRatio] = useState(0);
 
   // Only show best-selling products
   const featuredProducts = products.filter((p) => p.bestSelling);
 
   if (featuredProducts.length === 0) return null;
 
-  const nextSlide = () => {
-    setCurrentIndex((prevIndex) =>
-      prevIndex + 4 >= featuredProducts.length ? 0 : prevIndex + 4,
-    );
+  // Instead of complex transforms, let's use a native scrollable container with JS scroll methods for the buttons.
+  const scrollToNext = () => {
+    const el = document.getElementById("featured-carousel");
+    if (el) el.scrollBy({ left: el.offsetWidth + 24, behavior: "smooth" });
   };
 
-  const prevSlide = () => {
-    setCurrentIndex((prevIndex) =>
-      prevIndex === 0
-        ? Math.max(0, featuredProducts.length - 4)
-        : prevIndex - 4,
-    );
+  const scrollToPrev = () => {
+    const el = document.getElementById("featured-carousel");
+    if (el) el.scrollBy({ left: -(el.offsetWidth + 24), behavior: "smooth" });
   };
-
-  const visibleProducts = featuredProducts.slice(
-    currentIndex,
-    currentIndex + 4,
-  );
 
   return (
     <section
@@ -57,7 +49,8 @@ export default function ProductCarousel({ products, onQuickView }) {
         {featuredProducts.length > 4 && (
           <>
             <button
-              onClick={prevSlide}
+              className="nav-buttons"
+              onClick={scrollToPrev}
               style={{
                 position: "absolute",
                 left: -20,
@@ -97,7 +90,8 @@ export default function ProductCarousel({ products, onQuickView }) {
             </button>
 
             <button
-              onClick={nextSlide}
+              className="nav-buttons"
+              onClick={scrollToNext}
               style={{
                 position: "absolute",
                 right: -20,
@@ -138,27 +132,38 @@ export default function ProductCarousel({ products, onQuickView }) {
           </>
         )}
 
-        {/* Products Grid */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
-            gap: 24,
-            transition: "transform 0.3s ease",
-          }}>
-          {visibleProducts.map((product, i) => (
-            <ProductCard
-              key={`${product.id}-${currentIndex}-${i}`}
-              product={product}
-              index={i}
-              onQuickView={onQuickView}
-            />
-          ))}
+        {/* Products Grid Wrapper */}
+        <div 
+          className="carousel-viewport" 
+          id="featured-carousel"
+          onScroll={(e) => {
+            const el = e.target;
+            const maxScroll = el.scrollWidth - el.clientWidth;
+            if (maxScroll > 0) {
+              setScrollRatio(el.scrollLeft / maxScroll);
+            }
+          }}
+          style={{ scrollBehavior: "smooth" }}>
+          <div className="carousel-grid">
+            {featuredProducts.map((product, i) => (
+              <div
+                key={`${product.id}-${i}`}
+                className="carousel-item fade-up"
+                style={{ animationDelay: `${i * 0.1}s` }}>
+                <ProductCard
+                  product={product}
+                  index={i}
+                  onQuickView={onQuickView}
+                />
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Dots Indicator */}
         {featuredProducts.length > 4 && (
           <div
+            className="carousel-dots"
             style={{
               display: "flex",
               justifyContent: "center",
@@ -166,28 +171,35 @@ export default function ProductCarousel({ products, onQuickView }) {
               marginTop: 32,
             }}>
             {Array.from({ length: Math.ceil(featuredProducts.length / 4) }).map(
-              (_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setCurrentIndex(i * 4)}
-                  style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: "50%",
-                    border: "none",
-                    background:
-                      i === Math.floor(currentIndex / 4)
-                        ? "#C49A6C"
-                        : "#E8E6E0",
-                    cursor: "pointer",
-                    transition: "background 0.2s",
-                  }}
-                  aria-label={`Go to slide ${i + 1}`}
-                />
-              ),
+              (_, i, arr) => {
+                const isActive = Math.round(scrollRatio * (arr.length - 1)) === i;
+                return (
+                  <button
+                    key={i}
+                    onClick={() => {
+                      const el = document.getElementById("featured-carousel");
+                      if (el) {
+                        const maxScroll = el.scrollWidth - el.clientWidth;
+                        el.scrollTo({ left: (i / (arr.length - 1)) * maxScroll, behavior: "smooth" });
+                      }
+                    }}
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: "50%",
+                      border: "none",
+                      background: isActive ? "#C49A6C" : "#E8E6E0",
+                      cursor: "pointer",
+                      transition: "background 0.2s",
+                    }}
+                    aria-label={`Go to slide ${i + 1}`}
+                  />
+                );
+              }
             )}
           </div>
         )}
+
       </div>
     </section>
   );
