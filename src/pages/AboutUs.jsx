@@ -15,7 +15,7 @@ export default function AboutUs({ onBackToShop }) {
             fontWeight: 400,
             marginBottom: 8,
           }}>
-          About Efficiency.NG
+          About Efficiency Furniture
         </h1>
         <p style={{ fontSize: 16, color: "#888880" }}>
           Crafting timeless furniture for modern living
@@ -37,7 +37,8 @@ export default function AboutUs({ onBackToShop }) {
             Our Mission
           </h2>
           <p style={{ fontSize: 16, lineHeight: 1.7, color: "#444440" }}>
-            At Efficiency.NG, we believe that furniture should be more than just
+            At Efficiency Furniture, we believe that furniture should be more
+            than just
             functional—it should be beautiful, durable, and timeless. Founded
             with a passion for quality craftsmanship, we curate a collection of
             furniture that combines modern design with traditional techniques.

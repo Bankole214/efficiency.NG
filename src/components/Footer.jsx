@@ -1,4 +1,3 @@
-// ─── SOCIAL LINKS ────────────────────────────────────────────────────────────
 // Replace with your own Instagram username and WhatsApp number (with country code, no spaces or +)
 const INSTAGRAM_USERNAME = import.meta.env.VITE_INSTAGRAM_USERNAME; // e.g. "furnishstore"
 const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER; // e.g. "2348012345678"
@@ -30,17 +29,53 @@ export default function Footer({ onAdminClick, onReviewClick, onAboutClick }) {
         }}>
         {/* Brand */}
         <div style={{ maxWidth: 280 }}>
-          <span
+          <div
             style={{
-              fontFamily: "'Cormorant Garamond', serif",
-              fontSize: 22,
-              fontWeight: 500,
-              letterSpacing: 4,
-              display: "block",
-              marginBottom: 12,
+              display: "inline-flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              lineHeight: 1,
+              marginBottom: 16,
             }}>
-            EFFICIENCY.NG
-          </span>
+            <div
+              style={{
+                fontFamily: "'Cormorant Garamond', serif",
+                fontSize: 24,
+                fontWeight: 500,
+                letterSpacing: 3,
+                color: "#1C1C1A",
+                position: "relative",
+                paddingBottom: 8,
+              }}>
+              E
+              <span style={{ position: "relative" }}>
+                FFICIENC
+                <span
+                  style={{
+                    position: "absolute",
+                    bottom: -4,
+                    left: 0,
+                    right: 0,
+                    height: 1,
+                    background: "#1C1C1A",
+                  }}
+                />
+              </span>
+              Y
+            </div>
+            <div
+              style={{
+                fontFamily: "'DM Sans', sans-serif",
+                fontSize: 12,
+                fontWeight: 600,
+                letterSpacing: 2,
+                color: "#222",
+                marginTop: 0,
+              }}>
+              FURNITURE
+            </div>
+          </div>
           <p style={{ fontSize: 13, color: "#888880", lineHeight: 1.7 }}>
             Timeless furniture for modern living. Each piece crafted with care
             and built to last.
@@ -141,7 +176,8 @@ export default function Footer({ onAdminClick, onReviewClick, onAboutClick }) {
                 lineHeight: 1.5,
                 marginTop: 16,
               }}>
-              Workshop Address: 68 Nigerian Army Reference Hospital Myhoung Barracks Ya𝒃𝒂 Lagos, Nigeria
+              Workshop Address: 68 Nigerian Army Reference Hospital Myhoung
+              Barracks Ya𝒃𝒂 Lagos, Nigeria
             </p>
           </div>
         </div>
@@ -209,7 +245,8 @@ export default function Footer({ onAdminClick, onReviewClick, onAboutClick }) {
           gap: 12,
         }}>
         <p style={{ fontSize: 12, color: "#B0AEA8" }}>
-          © {new Date().getFullYear()} Efficiency.NG. All rights reserved.
+          © {new Date().getFullYear()} Efficiency Furniture. All rights
+          reserved.
         </p>
         <button
           onClick={onAdminClick}

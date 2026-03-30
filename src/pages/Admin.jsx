@@ -225,16 +225,53 @@ export default function Admin({
           gap: 16,
         }}>
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-          <span
+          <div
             style={{
-              fontFamily: "'Cormorant Garamond', serif",
-              fontSize: 22,
-              fontWeight: 500,
-              letterSpacing: 4,
-              color: "#F8F7F4",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              lineHeight: 1,
+              flexShrink: 0,
             }}>
-            EFFICIENCY.NG
-          </span>
+            <div
+              style={{
+                fontFamily: "'Cormorant Garamond', serif",
+                fontSize: 20,
+                fontWeight: 500,
+                letterSpacing: 4,
+                color: "#F8F7F4",
+                position: "relative",
+                paddingBottom: 6,
+              }}>
+              E
+              <span style={{ position: "relative" }}>
+                FFICIENC
+                <span
+                  style={{
+                    position: "absolute",
+                    bottom: -3,
+                    left: 0,
+                    right: 0,
+                    height: 1,
+                    background: "#F8F7F4",
+                  }}
+                />
+              </span>
+              Y
+            </div>
+            <div
+              style={{
+                fontFamily: "'DM Sans', sans-serif",
+                fontSize: 9,
+                fontWeight: 600,
+                letterSpacing: 2,
+                color: "#888880",
+                marginTop: 0,
+              }}>
+              FURNITURE
+            </div>
+          </div>
           <span
             style={{
               background: "#C49A6C",
@@ -253,7 +290,7 @@ export default function Admin({
             style={{
               background: "none",
               border: "1px solid #444",
-              color: "#aaa",
+              color: "#F8F7F4",
               padding: "8px 20px",
               fontSize: 11,
               letterSpacing: 1.5,
@@ -267,7 +304,7 @@ export default function Admin({
             style={{
               background: "none",
               border: "none",
-              color: "#666",
+              color: "#F8F7F4",
               fontSize: 11,
               letterSpacing: 1,
               cursor: "pointer",

@@ -18,7 +18,7 @@ export default function Review({ onBackToShop }) {
           Customer Reviews
         </h1>
         <p style={{ fontSize: 16, color: "#888880" }}>
-          What our customers say about Efficiency.NG
+          What our customers say about Efficiency Furniture
         </p>
       </div>
 
@@ -41,7 +41,7 @@ export default function Review({ onBackToShop }) {
           {
             name: "Michael Adebayo",
             rating: 5,
-            text: "I've been shopping at Efficiency.NG for years. Their customer service is outstanding and their furniture never disappoints. Highly recommend!",
+            text: "I've been shopping at Efficiency Furniture for years. Their customer service is outstanding and their furniture never disappoints. Highly recommend!",
             date: "February 2026",
           },
           {

@@ -40,12 +40,51 @@ export default function AdminLogin({ onSuccess, onBack }) {
         }}>
         <div
           style={{
-            width: 40,
-            height: 3,
-            background: "#C49A6C",
-            marginBottom: 28,
-          }}
-        />
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            lineHeight: 1,
+            marginBottom: 32,
+          }}>
+          <div
+            style={{
+              fontFamily: "'Cormorant Garamond', serif",
+              fontSize: 24,
+              fontWeight: 500,
+              letterSpacing: 4,
+              color: "#1C1C1A",
+              position: "relative",
+              paddingBottom: 6,
+            }}>
+            E
+            <span style={{ position: "relative" }}>
+              FFICIENC
+              <span
+                style={{
+                  position: "absolute",
+                  bottom: -3,
+                  left: 0,
+                  right: 0,
+                  height: 1,
+                  background: "#1C1C1A",
+                }}
+              />
+            </span>
+            Y
+          </div>
+          <div
+            style={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: 11,
+              fontWeight: 600,
+              letterSpacing: 2,
+              color: "#AAA",
+              marginTop: 0,
+            }}>
+            FURNITURE
+          </div>
+        </div>
         <h2
           style={{
             fontFamily: "'Cormorant Garamond', serif",

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Header from "../components/Header";
 import Hero from "../components/Hero";
+import ProductCarousel from "../components/ProductCarousel";
 import ProductCard from "../components/ProductCard";
 import CartDrawer from "../components/CartDrawer";
 import CheckoutModal from "../components/CheckoutModal";
@@ -36,6 +37,11 @@ export default function Shop({ products, onAdminClick, onReviewClick, onAboutCli
 
       <Hero />
 
+      <ProductCarousel
+        products={products}
+        onQuickView={setQuickView}
+      />
+
       <main
         style={{
           maxWidth: 1200,
@@ -43,27 +49,33 @@ export default function Shop({ products, onAdminClick, onReviewClick, onAboutCli
           padding:
             "clamp(32px,5vw,56px) clamp(20px,4vw,48px) clamp(48px,8vw,96px)",
         }}>
-        {filterCat !== "All" && (
+        {/* Centered Logo and Category Name */}
+        <div
+          style={{
+            margin: "40px 0 32px 0",
+            textAlign: "center",
+          }}>
           <div
             style={{
-              marginBottom: 32,
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
+              fontFamily: "'Cormorant Garamond', serif",
+              fontSize: 22,
+              fontWeight: 400,
+              color: "#C49A6C",
+              marginBottom: 0,
             }}>
-            <span
-              style={{
-                fontFamily: "'Cormorant Garamond', serif",
-                fontSize: 22,
-                fontWeight: 400,
-              }}>
-              {filterCat}
-            </span>
-            <span style={{ fontSize: 12, color: "#888880" }}>
-              — {displayProducts.length} items
-            </span>
+            {filterCat === "All" ? "All Products" : filterCat}
           </div>
-        )}
+        </div>
+
+        <div
+          style={{
+            marginBottom: 32,
+            textAlign: "center",
+          }}>
+          <span style={{ fontSize: 12, color: "#888880" }}>
+            {displayProducts.length} items
+          </span>
+        </div>
 
         <div
           style={{

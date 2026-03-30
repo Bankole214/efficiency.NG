@@ -100,6 +100,22 @@ input, textarea, select, button {
 .nav-cat.active { color: #1C1C1A; border-bottom-color: #C49A6C; }
 .nav-cat:hover  { color: #1C1C1A; }
 
+.nav-cat-light {
+  background: none;
+  border: none;
+  font-size: 11px;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 6px 0;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  color: #888880;
+  font-family: 'DM Sans', sans-serif;
+}
+.nav-cat-light.active { color: #fff; border-bottom-color: #C49A6C; }
+.nav-cat-light:hover  { color: #fff; }
+
 /* Form inputs */
 .input-field {
   width: 100%;
