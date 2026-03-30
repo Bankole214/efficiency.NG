@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useCart } from "../context/CartContext";
 
 export default function Header({
@@ -7,6 +8,18 @@ export default function Header({
   onAdminClick,
 }) {
   const { cartCount, setShowCart } = useCart();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Close menu if pushing desktop
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 769 && isMobileMenuOpen) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [isMobileMenuOpen]);
 
   // Social links configuration
   const INSTAGRAM_USERNAME = import.meta.env.VITE_INSTAGRAM_USERNAME;
@@ -89,8 +102,38 @@ export default function Header({
           alignItems: "center",
           gap: 16,
         }}>
-        {/* Category Nav */}
+        {/* Hamburger Menu Button */}
+        <button
+          className="mobile-menu-btn"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          style={{
+            background: "none",
+            border: "none",
+            color: "#FFF",
+            cursor: "pointer",
+            padding: "8px 0",
+            display: "none", // hidden by default on desktop
+            alignItems: "center",
+          }}
+          aria-label="Toggle menu">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5">
+            {isMobileMenuOpen ? (
+              <path d="M18 6L6 18M6 6l12 12" />
+            ) : (
+              <path d="M3 12h18M3 6h18M3 18h18" />
+            )}
+          </svg>
+        </button>
+
+        {/* Category Nav - Desktop */}
         <nav
+          className="desktop-nav"
           style={{
             display: "flex",
             gap: "clamp(10px,2vw,24px)",
@@ -221,6 +264,44 @@ export default function Header({
           </button>
         </div>
       </div>
+
+      {/* Mobile Categories Overflow Wrapper */}
+      {isMobileMenuOpen && (
+        <div
+          className="mobile-menu-overlay fade-up"
+          style={{
+            position: "absolute",
+            top: "100%",
+            left: 0,
+            right: 0,
+            background: "#000",
+            borderBottom: "1px solid #222",
+            padding: "16px clamp(20px,4vw,48px) 24px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 16,
+            zIndex: 99,
+          }}>
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              className={`nav-cat-light${activeCategory === cat ? " active" : ""}`}
+              onClick={() => {
+                onCategoryChange(cat);
+                setIsMobileMenuOpen(false);
+              }}
+              style={{
+                fontSize: 14,
+                width: "100%",
+                padding: "12px 0",
+                textAlign: "left",
+                borderBottom: "1px solid #222",
+              }}>
+              {cat}
+            </button>
+          ))}
+        </div>
+      )}
     </header>
   );
 }

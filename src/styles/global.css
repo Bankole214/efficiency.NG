@@ -184,4 +184,19 @@ input, textarea, select, button {
     scroll-snap-align: start;
     flex-shrink: 0;
   }
+  .desktop-nav {
+    display: none !important;
+  }
+  .mobile-menu-btn {
+    display: flex !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-menu-btn {
+    display: none !important;
+  }
+  .mobile-menu-overlay {
+    display: none !important;
+  }
 }
