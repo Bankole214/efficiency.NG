@@ -1,10 +1,9 @@
-// Replace with your own Instagram username and WhatsApp number (with country code, no spaces or +)
-const INSTAGRAM_USERNAME = import.meta.env.VITE_INSTAGRAM_USERNAME; // e.g. "furnishstore"
-const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER; // e.g. "2348012345678"
+
+const INSTAGRAM_USERNAME = import.meta.env.VITE_INSTAGRAM_USERNAME;
+const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER;
 const WHATSAPP_MESSAGE = encodeURIComponent(
   "Hi! I'm interested in your furniture.",
 );
-// ─────────────────────────────────────────────────────────────────────────────
 
 const INSTAGRAM_URL = `https://instagram.com/${INSTAGRAM_USERNAME}`;
 const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MESSAGE}`;
@@ -17,7 +16,6 @@ export default function Footer({ onAdminClick, onReviewClick, onAboutClick }) {
         padding: "40px clamp(20px,4vw,48px) 28px",
         marginTop: 40,
       }}>
-      {/* Top: Brand + social + admin */}
       <div
         style={{
           display: "flex",
@@ -27,7 +25,6 @@ export default function Footer({ onAdminClick, onReviewClick, onAboutClick }) {
           gap: 32,
           marginBottom: 32,
         }}>
-        {/* Brand */}
         <div style={{ maxWidth: 280 }}>
           <div
             style={{
@@ -82,7 +79,6 @@ export default function Footer({ onAdminClick, onReviewClick, onAboutClick }) {
           </p>
         </div>
 
-        {/* Contact / Social */}
         <div>
           <p
             style={{
@@ -95,7 +91,6 @@ export default function Footer({ onAdminClick, onReviewClick, onAboutClick }) {
             Reach Out
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {/* WhatsApp */}
             <a
               href={WHATSAPP_URL}
               target="_blank"

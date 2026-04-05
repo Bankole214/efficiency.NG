@@ -6,28 +6,30 @@ export default function ProductCard({ product, index, onQuickView }) {
   const { addToCart } = useCart();
   const [added, setAdded] = useState(false);
 
-  const handleAdd = () => {
+  const handleAdd = (e) => {
+    e.stopPropagation();
     addToCart(product);
     setAdded(true);
     setTimeout(() => setAdded(false), 1400);
   };
 
-  // Get first image, supporting both old (img) and new (imgs) formats
   const mainImage = product.imgs?.[0] || product.img;
 
   return (
     <div
       className="pcard"
-      style={{ animation: `fadeUp 0.45s ${index * 0.06}s ease both` }}>
+      onClick={() => onQuickView(product)}
+      style={{ 
+        animation: `fadeUp 0.45s ${index * 0.06}s ease both`,
+        cursor: "pointer"
+      }}>
       {/* Image */}
       <div
         style={{
           overflow: "hidden",
           height: 256,
-          cursor: "pointer",
           position: "relative",
-        }}
-        onClick={() => onQuickView(product)}>
+        }}>
         <img
           className="pcard-img"
           src={mainImage}

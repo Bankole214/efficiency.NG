@@ -8,7 +8,6 @@ export default function QuickViewModal({ product, onClose }) {
 
   if (!product) return null;
 
-  // Support both old (img) and new (imgs) formats
   const images = product.imgs || (product.img ? [product.img] : []);
   const totalImages = images.length;
   const currentImage =
@@ -38,13 +37,14 @@ export default function QuickViewModal({ product, onClose }) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: 20,
+        padding: "clamp(12px, 4vw, 24px)",
       }}>
       <div
         style={{
           position: "absolute",
           inset: 0,
-          background: "rgba(0,0,0,0.45)",
+          background: "rgba(0,0,0,0.65)",
+          backdropFilter: "blur(4px)",
         }}
         onClick={onClose}
       />
@@ -53,21 +53,28 @@ export default function QuickViewModal({ product, onClose }) {
         style={{
           position: "relative",
           background: "#fff",
-          maxWidth: 720,
+          maxWidth: 600,
           width: "100%",
+          height: "min(85vh, 760px)",
           display: "flex",
-          flexWrap: "wrap",
-          animation: "popIn 0.3s ease",
-          maxHeight: "90vh",
-          overflow: "auto",
+          flexDirection: "column",
+          animation: "popIn 0.35s cubic-bezier(0.16, 1, 0.3, 1)",
+          overflow: "hidden",
+          borderRadius: 8,
+          boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)",
         }}>
-        {/* Image Gallery */}
+        {/* Image Section - Large & Centered */}
         <div
           style={{
             position: "relative",
-            width: "50%",
-            minWidth: 260,
-            maxHeight: 440,
+            width: "100%",
+            height: "60%",
+            background: "#F8F7F4",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            overflow: "hidden",
+            flexShrink: 0,
           }}>
           <img
             src={currentImage}
@@ -75,8 +82,9 @@ export default function QuickViewModal({ product, onClose }) {
             style={{
               width: "100%",
               height: "100%",
-              objectFit: "cover",
+              objectFit: "contain",
               display: "block",
+              padding: 20,
             }}
             onError={(e) => {
               e.target.src =
@@ -89,14 +97,17 @@ export default function QuickViewModal({ product, onClose }) {
             <div
               style={{
                 position: "absolute",
-                bottom: 12,
-                left: 12,
-                background: "rgba(28,28,26,0.85)",
+                bottom: 16,
+                left: "50%",
+                transform: "translateX(-50%)",
+                background: "rgba(28,28,26,0.8)",
+                backdropFilter: "blur(4px)",
                 color: "#fff",
-                padding: "6px 10px",
+                padding: "6px 12px",
                 fontSize: 11,
-                fontWeight: 500,
-                borderRadius: 3,
+                fontWeight: 600,
+                borderRadius: 20,
+                letterSpacing: 1,
               }}>
               {currentImageIndex + 1} / {totalImages}
             </div>
@@ -109,161 +120,152 @@ export default function QuickViewModal({ product, onClose }) {
                 onClick={handlePrevImage}
                 style={{
                   position: "absolute",
-                  left: 10,
+                  left: 12,
                   top: "50%",
                   transform: "translateY(-50%)",
                   background: "rgba(255,255,255,0.9)",
                   border: "none",
                   cursor: "pointer",
-                  width: 28,
-                  height: 28,
+                  width: 36,
+                  height: 36,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: 16,
-                  borderRadius: 2,
-                  transition: "background 0.2s",
-                }}
-                onMouseEnter={(e) => (e.target.style.background = "#fff")}
-                onMouseLeave={(e) =>
-                  (e.target.style.background = "rgba(255,255,255,0.9)")
-                }>
+                  fontSize: 20,
+                  borderRadius: "50%",
+                  boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+                  transition: "all 0.2s",
+                }}>
                 ‹
               </button>
               <button
                 onClick={handleNextImage}
                 style={{
                   position: "absolute",
-                  right: 10,
+                  right: 12,
                   top: "50%",
                   transform: "translateY(-50%)",
                   background: "rgba(255,255,255,0.9)",
                   border: "none",
                   cursor: "pointer",
-                  width: 28,
-                  height: 28,
+                  width: 36,
+                  height: 36,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: 16,
-                  borderRadius: 2,
-                  transition: "background 0.2s",
-                }}
-                onMouseEnter={(e) => (e.target.style.background = "#fff")}
-                onMouseLeave={(e) =>
-                  (e.target.style.background = "rgba(255,255,255,0.9)")
-                }>
+                  fontSize: 20,
+                  borderRadius: "50%",
+                  boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+                  transition: "all 0.2s",
+                }}>
                 ›
               </button>
             </>
           )}
-
-          {/* Thumbnail dots */}
-          {totalImages > 1 && (
-            <div
-              style={{
-                position: "absolute",
-                bottom: 12,
-                right: 12,
-                display: "flex",
-                gap: 6,
-              }}>
-              {images.map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setCurrentImageIndex(idx)}
-                  style={{
-                    width: 6,
-                    height: 6,
-                    borderRadius: "50%",
-                    border: "none",
-                    cursor: "pointer",
-                    background:
-                      currentImageIndex === idx
-                        ? "#C49A6C"
-                        : "rgba(255,255,255,0.6)",
-                    transition: "background 0.2s",
-                  }}
-                  onMouseEnter={(e) => {
-                    if (currentImageIndex !== idx)
-                      e.target.style.background = "rgba(255,255,255,0.8)";
-                  }}
-                  onMouseLeave={(e) => {
-                    if (currentImageIndex !== idx)
-                      e.target.style.background = "rgba(255,255,255,0.6)";
-                  }}
-                />
-              ))}
-            </div>
-          )}
         </div>
 
-        {/* Details */}
-        <div style={{ flex: 1, padding: "36px 32px", minWidth: 240 }}>
+        {/* Scrollable Details Section */}
+        <div
+          style={{
+            flex: 1,
+            padding: "32px clamp(20px, 5vw, 40px)",
+            overflowY: "auto",
+            display: "flex",
+            flexDirection: "column",
+          }}>
           <p
             style={{
               fontSize: 10,
               color: "#C49A6C",
               letterSpacing: 2,
               textTransform: "uppercase",
-              marginBottom: 10,
-              fontWeight: 500,
+              marginBottom: 8,
+              fontWeight: 600,
             }}>
             {product.category}
           </p>
-          <h2
+          <div
             style={{
-              fontFamily: "'Cormorant Garamond', serif",
-              fontSize: 28,
-              fontWeight: 400,
-              lineHeight: 1.2,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "baseline",
+              gap: 16,
               marginBottom: 16,
             }}>
-            {product.name}
-          </h2>
-          <p
-            style={{
-              fontFamily: "'Cormorant Garamond', serif",
-              fontSize: 24,
-              marginBottom: 20,
-            }}>
-            {fmt(product.price)}
-          </p>
+            <h2
+              style={{
+                fontFamily: "'Cormorant Garamond', serif",
+                fontSize: "clamp(24px, 5vw, 32px)",
+                fontWeight: 400,
+                lineHeight: 1.1,
+                margin: 0,
+              }}>
+              {product.name}
+            </h2>
+            <p
+              style={{
+                fontFamily: "'Cormorant Garamond', serif",
+                fontSize: "clamp(20px, 4vw, 24px)",
+                margin: 0,
+                color: "#1C1C1A",
+                whiteSpace: "nowrap",
+              }}>
+              {fmt(product.price)}
+            </p>
+          </div>
+
           <p
             style={{
               fontSize: 14,
-              color: "#888880",
-              lineHeight: 1.7,
-              marginBottom: 28,
+              color: "#666",
+              lineHeight: 1.6,
+              marginBottom: 32,
+              flex: 1,
             }}>
             {product.desc}
           </p>
+
           <button
             className="btn-dark"
-            style={{ width: "100%" }}
+            style={{
+              width: "100%",
+              padding: "16px",
+              fontSize: 12,
+              letterSpacing: 2,
+              marginTop: "auto",
+            }}
             onClick={handleAdd}>
             Add to Cart
           </button>
         </div>
 
-        {/* Close */}
+        {/* Close Button */}
         <button
           onClick={onClose}
           style={{
             position: "absolute",
-            top: 14,
-            right: 14,
-            background: "#1C1C1A",
+            top: 16,
+            right: 16,
+            background: "rgba(28,28,26,0.1)",
             border: "none",
-            color: "#fff",
-            width: 30,
-            height: 30,
+            color: "#1C1C1A",
+            width: 32,
+            height: 32,
             cursor: "pointer",
-            fontSize: 16,
+            fontSize: 18,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-          }}>
+            borderRadius: "50%",
+            transition: "all 0.2s",
+            zIndex: 1,
+          }}
+          onMouseEnter={(e) =>
+            (e.currentTarget.style.background = "rgba(28,28,26,0.2)")
+          }
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.background = "rgba(28,28,26,0.1)")
+          }>
           ✕
         </button>
       </div>

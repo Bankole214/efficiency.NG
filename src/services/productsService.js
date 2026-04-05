@@ -13,11 +13,9 @@ import {
 } from 'firebase/firestore';
 import { db } from '../firebase';
 
-// Products collection reference
 const productsCollection = collection(db, 'products');
 const settingsDocRef = doc(db, 'metadata', 'productsInitialized');
 
-// Get all products from Firestore
 export const getProductsFromFirestore = async () => {
   try {
     const querySnapshot = await getDocs(productsCollection);
@@ -32,7 +30,6 @@ export const getProductsFromFirestore = async () => {
   }
 };
 
-// Add a new product to Firestore
 export const addProductToFirestore = async (product) => {
   try {
     const docRef = await addDoc(productsCollection, product);
@@ -43,7 +40,6 @@ export const addProductToFirestore = async (product) => {
   }
 };
 
-// Update a product in Firestore
 export const updateProductInFirestore = async (id, updates) => {
   try {
     const productRef = doc(db, 'products', id);
@@ -54,7 +50,6 @@ export const updateProductInFirestore = async (id, updates) => {
   }
 };
 
-// Delete a product from Firestore
 export const deleteProductFromFirestore = async (id) => {
   try {
     const productRef = doc(db, 'products', id);
@@ -65,7 +60,6 @@ export const deleteProductFromFirestore = async (id) => {
   }
 };
 
-// Initialize products in Firestore (run once to set up initial data)
 export const initializeProductsInFirestore = async (initialProducts) => {
   try {
     await runTransaction(db, async (tx) => {
@@ -75,21 +69,18 @@ export const initializeProductsInFirestore = async (initialProducts) => {
         return;
       }
 
-      // Write initial products in a batch
       const batch = writeBatch(db);
       initialProducts.forEach((product) => {
         const prodRef = doc(productsCollection);
         batch.set(prodRef, product);
       });
 
-      // mark initialization complete
       batch.set(settingsDocRef, { initializedAt: new Date().toISOString() });
       await batch.commit();
       console.log('Initial products added to Firestore');
     });
   } catch (error) {
     if (error.name === 'FirebaseError' && error.code === 'aborted') {
-      // Transaction aborted; maybe another process already initialized
       console.log('Initialization transaction aborted, likely already initialized.');
       return;
     }

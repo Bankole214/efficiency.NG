@@ -4,12 +4,10 @@ import ProductCard from "./ProductCard";
 export default function ProductCarousel({ products, onQuickView }) {
   const [scrollRatio, setScrollRatio] = useState(0);
 
-  // Only show best-selling products
   const featuredProducts = products.filter((p) => p.bestSelling);
 
   if (featuredProducts.length === 0) return null;
 
-  // Instead of complex transforms, let's use a native scrollable container with JS scroll methods for the buttons.
   const scrollToNext = () => {
     const el = document.getElementById("featured-carousel");
     if (el) el.scrollBy({ left: el.offsetWidth + 24, behavior: "smooth" });

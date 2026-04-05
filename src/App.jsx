@@ -2,14 +2,15 @@ import { useEffect, useState, useRef } from "react";
 import { Toaster } from "react-hot-toast";
 import { useAnalytics } from "./context/AnalyticsContext";
 import { getProductsFromFirestore } from "./services/productsService";
+import { getCategoriesFromFirestore, initializeCategoriesInFirestore } from "./services/categoryService";
 import Shop from "./pages/Shop";
 import AdminLogin from "./pages/AdminLogin";
 import Admin from "./pages/Admin";
 import Review from "./pages/Review";
 import AboutUs from "./pages/AboutUs";
+import FloatingCart from "./components/FloatingCart";
 import "./styles/global.css";
 
-// Load Paystack script once at the app level
 function usePaystack() {
   useEffect(() => {
     if (document.querySelector('script[src*="paystack"]')) return;
@@ -20,19 +21,17 @@ function usePaystack() {
   }, []);
 }
 
-// Persist products in Firestore (shared across all users)
 function useProducts() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Load products from Firestore on mount
+
   useEffect(() => {
     const loadProducts = async () => {
       try {
         const firestoreProducts = await getProductsFromFirestore();
         const seedIds = new Set(["p1", "p2", "p3", "p4", "p5", "p6"]);
 
-        // Exclude the old local seed IDs if they still exist in Firestore
         const filteredProducts = firestoreProducts
           .filter((p) => !seedIds.has(p.id))
           .map((p) => ({ ...p, bestSelling: p.bestSelling || false }));
@@ -40,7 +39,7 @@ function useProducts() {
         setProducts(filteredProducts);
       } catch (error) {
         console.error('Error loading products:', error);
-        setProducts([]); // DB not ready yet, show empty list until DB provides data
+        setProducts([]);
       } finally {
         setLoading(false);
       }
@@ -56,10 +55,40 @@ function useProducts() {
   return [products, updateProducts, loading];
 }
 
+
+function useCategories() {
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        let firestoreCats = await getCategoriesFromFirestore();
+        if (firestoreCats.length <= 1) {
+            const initialCategories = ["Seating", "Tables", "Office", "Lighting", "Storage", "Bedroom", "Other"];
+            await initializeCategoriesInFirestore(initialCategories);
+            firestoreCats = await getCategoriesFromFirestore();
+        }
+        setCategories(firestoreCats);
+      } catch (error) {
+        console.error('Error loading categories:', error);
+        setCategories([{ id: "other-id", name: "Other" }]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadCategories();
+  }, []);
+
+  return [categories, setCategories, loading];
+}
+
 export default function App() {
   usePaystack();
-  const [products, setProducts, loading] = useProducts();
-  const [view, setView] = useState("shop"); // "shop" | "adminLogin" | "admin" | "review" | "about"
+  const [products, setProducts, productsLoading] = useProducts();
+  const [categories, setCategories, categoriesLoading] = useCategories();
+  const loading = productsLoading || categoriesLoading;
+  const [view, setView] = useState("shop");
   const [adminAuthed, setAdminAuthed] = useState(false);
   const { trackVisit } = useAnalytics();
   const hasTracked = useRef(false);
@@ -79,7 +108,6 @@ export default function App() {
     }
   };
 
-  // Show loading while fetching products
   if (loading) {
     return (
       <div style={{
@@ -125,6 +153,7 @@ export default function App() {
       {view === "shop" && (
         <Shop
           products={products}
+          categories={categories}
           onAdminClick={goAdmin}
           onReviewClick={() => setView("review")}
           onAboutClick={() => setView("about")}
@@ -145,6 +174,8 @@ export default function App() {
         <Admin
           products={products}
           onProductsChange={setProducts}
+          categories={categories}
+          onCategoriesChange={setCategories}
           onViewShop={() => setView("shop")}
           onSignOut={() => {
             setAdminAuthed(false);
@@ -160,6 +191,8 @@ export default function App() {
       {view === "about" && (
         <AboutUs onBackToShop={() => setView("shop")} />
       )}
+
+      <FloatingCart />
     </>
   );
 }

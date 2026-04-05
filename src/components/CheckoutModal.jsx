@@ -4,11 +4,9 @@ import { useCart } from "../context/CartContext";
 import { useAnalytics } from "../context/AnalyticsContext";
 import toast from "react-hot-toast";
 
-// ─── PAYSTACK KEY ────────────────────────────────────────────────────────────
-// Replace the value in .env file with your Paystack public key.
-// Get it from: https://dashboard.paystack.com/#/settings/developer
+
 const PAYSTACK_PUBLIC_KEY = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
-// ─────────────────────────────────────────────────────────────────────────────
+
 
 export default function CheckoutModal({ open, onClose, onSuccess }) {
   const { cart, cartTotal, clearCart } = useCart();
@@ -33,7 +31,7 @@ export default function CheckoutModal({ open, onClose, onSuccess }) {
     const handler = window.PaystackPop.setup({
       key: PAYSTACK_PUBLIC_KEY,
       email: form.email,
-      amount: cartTotal * 100, // Paystack expects kobo
+      amount: cartTotal * 100,
       currency: "NGN",
       ref: orderRef,
       metadata: {
@@ -47,14 +45,12 @@ export default function CheckoutModal({ open, onClose, onSuccess }) {
         ],
       },
       callback: () => {
-        // Track the purchase for analytics
         trackPurchase(cart, {
           name: form.name,
           email: form.email,
           phone: form.phone,
         });
 
-        // Prepare order details for receipt
         const order = {
           ref: orderRef,
           date: new Date().toLocaleString(),

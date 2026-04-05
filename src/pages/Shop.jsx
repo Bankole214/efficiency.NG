@@ -9,14 +9,14 @@ import QuickViewModal from "../components/QuickViewModal";
 import Footer from "../components/Footer";
 import toast from "react-hot-toast";
 
-export default function Shop({ products, onAdminClick, onReviewClick, onAboutClick }) {
+export default function Shop({ products, categories, onAdminClick, onReviewClick, onAboutClick }) {
   const [filterCat, setFilterCat] = useState("All");
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [quickView, setQuickView] = useState(null);
 
   const allCategories = [
     "All",
-    ...Array.from(new Set(products.map((p) => p.category))),
+    ...new Set(categories.map(c => c.name)),
   ];
   const displayProducts =
     filterCat === "All"
@@ -27,13 +27,51 @@ export default function Shop({ products, onAdminClick, onReviewClick, onAboutCli
     toast.success("Order placed! Thank you for shopping with Efficiency.NG.");
   };
 
+  const handleCategoryChange = (cat) => {
+    setFilterCat(cat);
+    toast.success(`Browsing ${cat} Furniture`, {
+      id: "category-toast",
+      icon: "🛋️",
+    });
+  };
+
   return (
     <>
       <Header
         categories={allCategories}
         activeCategory={filterCat}
-        onCategoryChange={setFilterCat}
+        onCategoryChange={handleCategoryChange}
       />
+
+      {/* Page Header: Centered Logo and Category Name */}
+      <div
+        style={{
+          margin: "40px 0 20px 0",
+          textAlign: "center",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 12,
+        }}>
+        <div
+          style={{
+            fontFamily: "'Cormorant Garamond', serif",
+            fontSize: "clamp(32px, 6vw, 48px)",
+            fontWeight: 400,
+            color: "#1C1C1A",
+            textTransform: "capitalize",
+            letterSpacing: -0.5,
+          }}>
+          {filterCat === "All" ? "Our Collection" : filterCat}
+        </div>
+        <div
+          style={{
+            width: 40,
+            height: 1,
+            background: "#C49A6C",
+          }}
+        />
+      </div>
 
       <Hero />
 
@@ -49,23 +87,6 @@ export default function Shop({ products, onAdminClick, onReviewClick, onAboutCli
           padding:
             "clamp(32px,5vw,56px) clamp(20px,4vw,48px) clamp(48px,8vw,96px)",
         }}>
-        {/* Centered Logo and Category Name */}
-        <div
-          style={{
-            margin: "40px 0 32px 0",
-            textAlign: "center",
-          }}>
-          <div
-            style={{
-              fontFamily: "'Cormorant Garamond', serif",
-              fontSize: 22,
-              fontWeight: 400,
-              color: "#C49A6C",
-              marginBottom: 0,
-            }}>
-            {filterCat === "All" ? "All Products" : filterCat}
-          </div>
-        </div>
 
         <div
           style={{

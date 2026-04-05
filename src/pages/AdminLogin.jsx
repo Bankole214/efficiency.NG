@@ -1,9 +1,6 @@
 import { useState } from "react";
 
-// ─── ADMIN PASSWORD ───────────────────────────────────────────────────────────
-// Change this in the .env file to your preferred admin password
 const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD;
-// ─────────────────────────────────────────────────────────────────────────────
 
 export default function AdminLogin({ onSuccess, onBack }) {
   const [password, setPassword] = useState("");

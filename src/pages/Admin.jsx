@@ -1,26 +1,31 @@
 import { useState } from "react";
-import { fmt, CATEGORIES } from "../data/products";
+import { fmt } from "../data/products";
 import toast from "react-hot-toast";
 import { useConfirm } from "../hooks/useConfirm.jsx";
 import { useAnalytics } from "../context/AnalyticsContext";
 import { addProductToFirestore, updateProductInFirestore, deleteProductFromFirestore } from "../services/productsService";
+import { addCategoryToFirestore, deleteCategoryFromFirestore } from "../services/categoryService";
 
 export default function Admin({
   products,
   onProductsChange,
+  categories,
+  onCategoriesChange,
   onSignOut,
   onViewShop,
 }) {
   const [form, setForm] = useState({
     name: "",
     price: "",
-    category: "Seating",
+    category: categories?.[0]?.name || "Other",
     desc: "",
     imgs: [],
     bestSelling: false,
   });
   const [editingId, setEditingId] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [newCatName, setNewCatName] = useState("");
+  const [isAddingCat, setIsAddingCat] = useState(false);
   const { confirm } = useConfirm();
   const { analytics, resetVisits } = useAnalytics();
 
@@ -60,7 +65,6 @@ export default function Admin({
 
       if (!response.ok) throw new Error("Upload failed");
       const data = await response.json();
-      // Add to imgs array instead of replacing
       setForm(f => ({ ...f, imgs: [...f.imgs, data.secure_url] }));
       toast.success("Image uploaded successfully!");
     } catch (error) {
@@ -201,6 +205,52 @@ export default function Admin({
       },
       undefined,
       "Sign Out",
+    );
+  };
+
+  const handleAddCategory = async () => {
+    if (!newCatName.trim()) return;
+    const trimmedNameLower = newCatName.trim().toLowerCase();
+    
+    if (trimmedNameLower === "other") {
+        toast.error("The 'Other' category is already present as a fallback.");
+        return;
+    }
+    if (categories.find(c => c.name.toLowerCase() === trimmedNameLower)) {
+        toast.error("Category already exists");
+        return;
+    }
+    setIsAddingCat(true);
+    try {
+        const addedCat = await addCategoryToFirestore(newCatName.trim());
+        onCategoriesChange([...categories, addedCat]);
+        setNewCatName("");
+        toast.success(`Category "${addedCat.name}" added`);
+    } catch (error) {
+        toast.error("Failed to add category");
+    } finally {
+        setIsAddingCat(false);
+    }
+  };
+
+  const handleDeleteCategory = (cat) => {
+    if (cat.name.toLowerCase() === "other") {
+        toast.error("Cannot delete the 'Other' fallback category");
+        return;
+    }
+    confirm(
+        `Are you sure you want to delete category "${cat.name}"? Products in this category will be moved to "Other".`,
+        async () => {
+            try {
+                await deleteCategoryFromFirestore(cat.id, cat.name, products, onProductsChange);
+                onCategoriesChange(categories.filter(c => c.id !== cat.id));
+                toast.success(`Category "${cat.name}" deleted`);
+            } catch (error) {
+                toast.error("Failed to delete category");
+            }
+        },
+        undefined,
+        "Delete Category"
     );
   };
 
@@ -426,8 +476,8 @@ export default function Admin({
                 className="input-field"
                 value={form.category}
                 onChange={(e) => setField("category", e.target.value)}>
-                {CATEGORIES.map((c) => (
-                  <option key={c}>{c}</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.name}>{c.name}</option>
                 ))}
               </select>
             </div>
@@ -600,6 +650,78 @@ export default function Admin({
             <button className="btn-dark" onClick={handleSave}>
               {editingId ? "Save Changes" : "Add to Store"}
             </button>
+          </div>
+        </div>
+
+        {/* Category Management */}
+        <div
+          style={{
+            background: "#fff",
+            padding: "clamp(24px,4vw,36px)",
+            marginBottom: 40,
+            boxShadow: "0 2px 20px rgba(0,0,0,0.05)",
+          }}>
+          <h3
+            style={{
+              fontFamily: "'Cormorant Garamond', serif",
+              fontSize: 22,
+              fontWeight: 400,
+              marginBottom: 24,
+            }}>
+            🏷️  Category Management
+          </h3>
+
+          <div style={{ display: "flex", gap: 12, marginBottom: 24 }}>
+            <input
+              className="input-field"
+              placeholder="New category name..."
+              value={newCatName}
+              onChange={(e) => setNewCatName(e.target.value)}
+              onKeyPress={(e) => e.key === "Enter" && handleAddCategory()}
+            />
+            <button 
+                className="btn-dark" 
+                style={{ width: "auto", whiteSpace: "nowrap" }}
+                onClick={handleAddCategory}
+                disabled={isAddingCat}
+            >
+                {isAddingCat ? "Adding..." : "Add Category"}
+            </button>
+          </div>
+
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {categories.map((cat) => (
+              <div
+                key={cat.id}
+                style={{
+                  background: "#F8F7F4",
+                  border: "1px solid #E8E6E0",
+                  padding: "6px 12px",
+                  borderRadius: 4,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  fontSize: 13,
+                }}>
+                <span>{cat.name}</span>
+                {cat.name !== "Other" && (
+                    <button
+                        onClick={() => handleDeleteCategory(cat)}
+                        style={{
+                            background: "none",
+                            border: "none",
+                            color: "#888880",
+                            cursor: "pointer",
+                            fontSize: 14,
+                            padding: "0 4px",
+                        }}
+                        title="Delete category"
+                    >
+                        ✕
+                    </button>
+                )}
+              </div>
+            ))}
           </div>
         </div>
 
