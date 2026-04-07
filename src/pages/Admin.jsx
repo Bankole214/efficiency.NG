@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { fmt } from "../data/products";
 import toast from "react-hot-toast";
 import { useConfirm } from "../hooks/useConfirm.jsx";
 import { useAnalytics } from "../context/AnalyticsContext";
 import { addProductToFirestore, updateProductInFirestore, deleteProductFromFirestore } from "../services/productsService";
 import { addCategoryToFirestore, deleteCategoryFromFirestore } from "../services/categoryService";
+import { getOrders, markBalanceCollected } from "../services/orderService";
 
 export default function Admin({
   products,
@@ -27,7 +28,40 @@ export default function Admin({
   const [newCatName, setNewCatName] = useState("");
   const [isAddingCat, setIsAddingCat] = useState(false);
   const { confirm } = useConfirm();
-  const { analytics, resetVisits } = useAnalytics();
+  const { analytics, resetVisits, clearAnalytics } = useAnalytics();
+  const [outstandingOrders, setOutstandingOrders] = useState([]);
+  const [completedOrders, setCompletedOrders] = useState([]);
+  const [loadingOrders, setLoadingOrders] = useState(true);
+
+  useEffect(() => {
+    fetchAllOrders();
+  }, []);
+
+  const fetchAllOrders = async () => {
+    try {
+      setLoadingOrders(true);
+      const orders = await getOrders();
+      // Split into outstanding (PARTIAL) and completed (PAID)
+      setOutstandingOrders(orders.filter(o => o.paymentStatus === "PARTIAL"));
+      setCompletedOrders(orders.filter(o => o.paymentStatus === "PAID"));
+    } catch (error) {
+      console.error("Failed to fetch orders", error);
+    } finally {
+      setLoadingOrders(false);
+    }
+  };
+
+  const handleMarkCollected = async (orderId, orderDetails) => {
+    confirm("Mark the remaining balance as collected?", async () => {
+      try {
+        await markBalanceCollected(orderId, orderDetails);
+        toast.success("Balance marked as collected!");
+        fetchAllOrders();
+      } catch (error) {
+        toast.error("Failed to update the order");
+      }
+    }, undefined, "Mark Collected");
+  };
 
   // Cloudinary configuration
   const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
@@ -273,6 +307,9 @@ export default function Admin({
           justifyContent: "space-between",
           height: 68,
           gap: 16,
+          position: "sticky",
+          top: 0,
+          zIndex: 100,
         }}>
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <div
@@ -927,7 +964,7 @@ export default function Admin({
                           gap: 12,
                         }}>
                         <div style={{ fontWeight: 600, color: "#C49A6C" }}>
-                          ₦{fmt(product.revenue)}
+                          {fmt(product.revenue)}
                         </div>
                         <button
                           onClick={() => handleMarkBestSelling(product.id)}
@@ -997,7 +1034,7 @@ export default function Admin({
                       </div>
                     </div>
                     <div style={{ fontWeight: 600, color: "#C49A6C" }}>
-                      ₦{fmt(category.revenue)}
+                      {fmt(category.revenue)}
                     </div>
                   </div>
                 ))}
@@ -1031,6 +1068,17 @@ export default function Admin({
             <button
               className="btn-outline"
               onClick={() => {
+                confirm("Clear all sales and visits analytics?", () => {
+                  clearAnalytics();
+                  toast.success("All analytics reset to 0");
+                });
+              }}
+              style={{ fontSize: 14, color: "#C0392B", borderColor: "#F5C6CB", background: "#FDEDEE" }}>
+              Clear Data Analytics
+            </button>
+            <button
+              className="btn-outline"
+              onClick={() => {
                 confirm("Reset visit counter to 0?", () => {
                   resetVisits();
                   toast.success("Visit counter reset to 0");
@@ -1040,6 +1088,165 @@ export default function Admin({
               Reset Visit Counter
             </button>
           </div>
+        </div>
+
+        {/* Outstanding Balances Section */}
+        <div
+          style={{
+            background: "#fff",
+            padding: "clamp(24px,4vw,36px)",
+            marginBottom: 40,
+            boxShadow: "0 2px 20px rgba(0,0,0,0.05)",
+          }}>
+          <h3
+            style={{
+              fontFamily: "'Cormorant Garamond', serif",
+              fontSize: 22,
+              fontWeight: 400,
+              marginBottom: 24,
+            }}>
+            💰 Outstanding Balances
+          </h3>
+          
+          {loadingOrders ? (
+            <p style={{ fontSize: 13, color: "#888880" }}>Loading orders...</p>
+          ) : outstandingOrders.length === 0 ? (
+            <p style={{ fontSize: 13, color: "#888880" }}>No orders with outstanding balances currently.</p>
+          ) : (
+            <div style={{ display: "grid", gap: 16 }}>
+              {outstandingOrders.map((order) => (
+                <div
+                  key={order.id}
+                  style={{
+                    background: "#F8F7F4",
+                    border: "1px solid #E8E6E0",
+                    padding: "20px",
+                    borderRadius: 6,
+                  }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 4 }}>
+                        {order.customer.name}
+                      </div>
+                      <div style={{ fontSize: 12, color: "#888880" }}>
+                        Order ID: {order.ref} • {new Date(order.createdAt).toLocaleString()}
+                      </div>
+                      <div style={{ fontSize: 13, color: "#555", marginTop: 8 }}>
+                        📱 {order.customer.phone}
+                        <br />
+                        ✉️ {order.customer.email}
+                        {order.customer.address && (
+                          <>
+                            <br />
+                            📍 {order.customer.address}
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    <div style={{ textAlign: "right" }}>
+                      <div style={{ fontSize: 13, color: "#888880", marginBottom: 4 }}>Balance Due</div>
+                      <div style={{ fontWeight: 600, fontSize: 18, color: "#C0392B" }}>
+                        {fmt(order.balanceDue)}
+                      </div>
+                      <div style={{ fontSize: 11, color: "#888880", marginTop: 4 }}>
+                        Paid so far: {fmt(order.amountPaid)}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div style={{ 
+                    borderTop: "1px dashed #E8E6E0", 
+                    paddingTop: 12, 
+                    display: "flex", 
+                    justifyContent: "space-between",
+                    alignItems: "center"
+                  }}>
+                    <div style={{ fontSize: 12, color: "#555" }}>
+                      {order.items.map(item => `${item.qty}x ${item.product.name}`).join(', ')}
+                    </div>
+                    <button
+                      className="btn-dark"
+                      style={{ padding: "8px 16px", fontSize: 12 }}
+                      onClick={() => handleMarkCollected(order.id, order)}
+                    >
+                      Mark Collected on Delivery
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Completed Orders Section */}
+          <h3
+            style={{
+              fontFamily: "'Cormorant Garamond', serif",
+              fontSize: 22,
+              fontWeight: 400,
+              marginTop: 48,
+              marginBottom: 24,
+            }}>
+            📦 Fully Paid Orders
+          </h3>
+          
+          {loadingOrders ? (
+            <p style={{ fontSize: 13, color: "#888880" }}>Loading orders...</p>
+          ) : completedOrders.length === 0 ? (
+            <p style={{ fontSize: 13, color: "#888880" }}>No fully paid orders currently.</p>
+          ) : (
+            <div style={{ display: "grid", gap: 16 }}>
+              {completedOrders.map((order) => (
+                <div
+                  key={order.id}
+                  style={{
+                    background: "#F8F7F4",
+                    border: "1px solid #E8E6E0",
+                    padding: "20px",
+                    borderRadius: 6,
+                  }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 4 }}>
+                        {order.customer.name}
+                      </div>
+                      <div style={{ fontSize: 12, color: "#888880" }}>
+                        Order ID: {order.ref} • {new Date(order.createdAt).toLocaleString()}
+                      </div>
+                      <div style={{ fontSize: 13, color: "#555", marginTop: 8 }}>
+                        📱 {order.customer.phone}
+                        <br />
+                        ✉️ {order.customer.email}
+                        {order.customer.address && (
+                          <>
+                            <br />
+                            📍 {order.customer.address}
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    <div style={{ textAlign: "right" }}>
+                      <div style={{ fontSize: 13, color: "#888880", marginBottom: 4 }}>Status</div>
+                      <div style={{ fontWeight: 600, fontSize: 16, color: "#27AE60" }}>
+                        Paid in Full ({fmt(order.total)})
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div style={{ 
+                    borderTop: "1px dashed #E8E6E0", 
+                    paddingTop: 12, 
+                    display: "flex", 
+                    justifyContent: "space-between",
+                    alignItems: "center"
+                  }}>
+                    <div style={{ fontSize: 12, color: "#555" }}>
+                      {order.items.map(item => `${item.qty}x ${item.product.name}`).join(', ')}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Product List */}
