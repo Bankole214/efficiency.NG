@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { signOut } from "firebase/auth";
+import { auth } from "../firebase";
 import { fmt } from "../data/products";
 import toast from "react-hot-toast";
 import { useConfirm } from "../hooks/useConfirm.jsx";
@@ -233,9 +235,15 @@ export default function Admin({
   const handleSignOut = () => {
     confirm(
       "Are you sure you want to sign out?",
-      () => {
-        onSignOut();
-        toast.success("Signed out successfully");
+      async () => {
+        try {
+          await signOut(auth);
+          toast.success("Signed out successfully");
+          onSignOut();
+        } catch (err) {
+          toast.error("Failed to sign out. Please try again.");
+          console.error("Sign out error:", err);
+        }
       },
       undefined,
       "Sign Out",

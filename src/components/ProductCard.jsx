@@ -21,13 +21,18 @@ export default function ProductCard({ product, index, onQuickView }) {
       onClick={() => onQuickView(product)}
       style={{ 
         animation: `fadeUp 0.45s ${index * 0.06}s ease both`,
-        cursor: "pointer"
+        cursor: "pointer",
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+        border: "1px solid #f0f0f0"
       }}>
       {/* Image */}
       <div
         style={{
           overflow: "hidden",
           height: 256,
+          flexShrink: 0,
           position: "relative",
         }}>
         <img
@@ -84,13 +89,19 @@ export default function ProductCard({ product, index, onQuickView }) {
       </div>
 
       {/* Info */}
-      <div style={{ padding: "20px 22px 24px" }}>
+      <div style={{ 
+        padding: "20px 22px 24px", 
+        display: "flex", 
+        flexDirection: "column", 
+        flexGrow: 1 
+      }}>
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "flex-start",
             marginBottom: 4,
+            gap: 8
           }}>
           <h3
             style={{
@@ -98,8 +109,11 @@ export default function ProductCard({ product, index, onQuickView }) {
               fontSize: 19,
               fontWeight: 400,
               lineHeight: 1.2,
-              flex: 1,
-              paddingRight: 8,
+              margin: 0,
+              display: "-webkit-box",
+              WebkitLineClamp: 1,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
             }}>
             {product.name}
           </h3>
@@ -126,14 +140,19 @@ export default function ProductCard({ product, index, onQuickView }) {
             color: "#888880",
             lineHeight: 1.65,
             marginBottom: 20,
-            minHeight: 44,
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+            minHeight: 42,
+            flexGrow: 1
           }}>
           {product.desc}
         </p>
 
         <button
           className="btn-dark"
-          style={{ width: "100%" }}
+          style={{ width: "100%", marginTop: "auto" }}
           onClick={handleAdd}>
           {added ? (
             <span className="added-flash" style={{ color: "#C49A6C" }}>

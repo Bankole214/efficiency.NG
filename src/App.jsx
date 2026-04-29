@@ -1,4 +1,6 @@
 import { useEffect, useState, useRef } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "./firebase";
 import { Toaster } from "react-hot-toast";
 import { useAnalytics } from "./context/AnalyticsContext";
 import { getProductsFromFirestore } from "./services/productsService";
@@ -93,6 +95,14 @@ export default function App() {
   const { trackVisit } = useAnalytics();
   const hasTracked = useRef(false);
 
+  // Keep auth state in sync with Firebase
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setAdminAuthed(!!user);
+    });
+    return () => unsubscribe();
+  }, []);
+
   useEffect(() => {
     if (!hasTracked.current) {
       trackVisit();
@@ -106,6 +116,16 @@ export default function App() {
     } else {
       setView("adminLogin");
     }
+  };
+
+  // After successful Firebase sign-in, go straight to admin
+  const handleLoginSuccess = () => {
+    setView("admin");
+  };
+
+  // After sign-out, Firebase triggers onAuthStateChanged which clears adminAuthed
+  const handleSignOut = () => {
+    setView("shop");
   };
 
   if (loading) {
@@ -162,10 +182,7 @@ export default function App() {
 
       {view === "adminLogin" && (
         <AdminLogin
-          onSuccess={() => {
-            setAdminAuthed(true);
-            setView("admin");
-          }}
+          onSuccess={handleLoginSuccess}
           onBack={() => setView("shop")}
         />
       )}
@@ -177,10 +194,7 @@ export default function App() {
           categories={categories}
           onCategoriesChange={setCategories}
           onViewShop={() => setView("shop")}
-          onSignOut={() => {
-            setAdminAuthed(false);
-            setView("shop");
-          }}
+          onSignOut={handleSignOut}
         />
       )}
 

@@ -1,17 +1,42 @@
 import { useState } from "react";
-
-const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD;
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebase";
 
 export default function AdminLogin({ onSuccess, onBack }) {
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
-    if (password === ADMIN_PASSWORD) {
-      setError(false);
+  const handleLogin = async () => {
+    if (!email.trim() || !password) {
+      setError("Please enter your email and password.");
+      return;
+    }
+    setLoading(true);
+    setError("");
+    try {
+      await signInWithEmailAndPassword(auth, email.trim(), password);
       onSuccess();
-    } else {
-      setError(true);
+    } catch (err) {
+      switch (err.code) {
+        case "auth/user-not-found":
+        case "auth/wrong-password":
+        case "auth/invalid-credential":
+          setError("Incorrect email or password.");
+          break;
+        case "auth/too-many-requests":
+          setError("Too many attempts. Please try again later.");
+          break;
+        case "auth/invalid-email":
+          setError("Invalid email address.");
+          break;
+        default:
+          setError("Login failed. Please try again.");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -35,6 +60,7 @@ export default function AdminLogin({ onSuccess, onBack }) {
           boxShadow: "0 8px 40px rgba(0,0,0,0.08)",
           animation: "popIn 0.3s ease",
         }}>
+        {/* Logo */}
         <div
           style={{
             display: "flex",
@@ -82,6 +108,7 @@ export default function AdminLogin({ onSuccess, onBack }) {
             FURNITURE
           </div>
         </div>
+
         <h2
           style={{
             fontFamily: "'Cormorant Garamond', serif",
@@ -98,30 +125,77 @@ export default function AdminLogin({ onSuccess, onBack }) {
             marginBottom: 28,
             lineHeight: 1.6,
           }}>
-          Enter your password to manage your furniture store.
+          Sign in to manage your furniture store.
         </p>
 
+        {/* Email */}
         <input
-          type="password"
+          type="email"
           className="input-field"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Email address"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-          style={{ marginBottom: 8 }}
+          style={{ marginBottom: 12 }}
+          autoComplete="email"
         />
+
+        {/* Password */}
+        <div style={{ position: "relative", marginBottom: 8 }}>
+          <input
+            type={showPassword ? "text" : "password"}
+            className="input-field"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+            style={{ paddingRight: 40 }}
+            autoComplete="current-password"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            style={{
+              position: "absolute",
+              right: 12,
+              top: "50%",
+              transform: "translateY(-50%)",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              color: "#888880",
+              display: "flex",
+              alignItems: "center",
+              padding: 0,
+            }}
+            title={showPassword ? "Hide password" : "Show password"}
+          >
+            {showPassword ? (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+              </svg>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            )}
+          </button>
+        </div>
 
         {error && (
           <p style={{ color: "#C0392B", fontSize: 12, marginBottom: 12 }}>
-            Incorrect password. Please try again.
+            {error}
           </p>
         )}
 
         <button
           className="btn-dark"
-          style={{ width: "100%", marginTop: 8 }}
-          onClick={handleLogin}>
-          Enter Admin
+          style={{ width: "100%", marginTop: 8, opacity: loading ? 0.7 : 1 }}
+          onClick={handleLogin}
+          disabled={loading}>
+          {loading ? "Signing in…" : "Enter Admin"}
         </button>
 
         <button
